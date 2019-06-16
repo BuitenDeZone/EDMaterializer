@@ -1,0 +1,17 @@
+# IDEs
+.idea/
+.vs/
+*.pyproj
+*.pyproj.user
+*.sln
+*.iml
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+env/
+venv/
+.env
+.venv
+

@@ -46,15 +46,25 @@ def plugin_start(_plugin_dir):
     this.materialAlertFilters = MaterialAlertListSettings.translate_from_settings(config.get('material_filters'))
     return 'Materializer'
 
-def add_test_matches():
+def add_test_matches_1():
     """Add test matches."""
 
     this.materialAlertsFrame.add_matches("1", [
         MaterialMatch(Materials.ARSENIC, 2.3415),
         MaterialMatch(Materials.IRON, 20.33)])
+
+def add_test_matches_2():
     this.materialAlertsFrame.add_matches("2 b", [
         MaterialMatch(Materials.ARSENIC, 1.5),
         MaterialMatch(Materials.TUNGSTEN, 0.4)])
+
+def add_test_matches_3():
+    this.materialAlertsFrame.add_matches("3", [
+        MaterialMatch(Materials.ARSENIC, 1.5),
+        MaterialMatch(Materials.TUNGSTEN, 0.4)])
+
+def clear_test_matches():
+    this.materialAlertsFrame.clear_matches()
 
 def plugin_app(parent):
     """
@@ -64,26 +74,30 @@ def plugin_app(parent):
     """
 
     this.materialAlertsFrame = MaterialAlertListFrame(parent)
-    # parent.after(1000, add_test_matches)
-    return None
+    # parent.after(1000, add_test_matches_1)
+    # parent.after(3000, add_test_matches_2)
+    # parent.after(5000, add_test_matches_3)
+    # parent.after(8000, clear_test_matches)
+    # parent.after(10000, add_test_matches_3)
+    return this.materialAlertsFrame
 
 
-def journal_entry(_cmdr, _is_beta, _system, _station, entry, _state):
+def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
     """
     Handle the events.
     """
 
     if entry[FIELD_EVENT] == VALUE_EVENT_FSDJUMP:
-        this.currentSystem = str(entry[FIELD_STAR_SYSTEM])
         this.materialAlertsFrame.clear_matches()
 
     elif entry[FIELD_EVENT] == VALUE_EVENT_SCAN \
             and entry[FIELD_SCAN_TYPE] == VALUE_SCAN_TYPE_DETAILED \
+            and FIELD_LANDABLE in entry \
             and entry[FIELD_LANDABLE] is True:
 
         materials = entry[FIELD_MATERIALS]
         matches = [m for m in [f.check_matches(materials) for f in this.materialAlertFilters] if m is not None]
         planetentry = str(entry[FIELD_BODY_NAME])
-        planetname = planetentry.replace(this.currentSystem, '', 1)
+        planetname = planetentry.replace(system, '')
         if matches:
             this.materialAlertsFrame.add_matches(planetname, matches)

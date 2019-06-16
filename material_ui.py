@@ -15,13 +15,15 @@ from theme import theme
 from material_api import MaterialAlert, Materials
 
 
-class MaterialAlertListFrame(object):
+class MaterialAlertListFrame(tk.Frame):
     """
     A tk frame which displays matching material alerts.
     """
 
-    def __init__(self, master):
-        self.master = master
+    def __init__(self, master, **kw):
+
+        tk.Frame.__init__(self, master, **kw)
+
         self.currentRow = 0
         self.containerFrame = None
         self.initialize_frame()
@@ -33,7 +35,7 @@ class MaterialAlertListFrame(object):
         """
 
         if self.containerFrame is None:
-            self.containerFrame = tk.Frame(self.master)
+            self.containerFrame = tk.Frame(self)
             self.containerFrame.grid()
             self.currentRow = 0
 
@@ -41,9 +43,13 @@ class MaterialAlertListFrame(object):
         """
         Clears the frame with matches.
         """
-
         if self.containerFrame is not None:
+            self.containerFrame.grid_forget()
             self.containerFrame.destroy()
+            self.containerFrame = None
+
+        self.initialize_frame()
+        self.containerFrame.configure(background=theme.current['background'])
 
     def add_matches(self, planet, matches):
         """
@@ -53,22 +59,20 @@ class MaterialAlertListFrame(object):
         self.initialize_frame()
         # Copy the color configuration from the EDMC theme.
 
-        current_theme = theme.current
-
         planet_text = "{}:".format(planet)
         label_planet = tk.Label(self.containerFrame, text=planet_text)
         label_planet.configure(
-            foreground=current_theme['foreground'],
-            background=current_theme['background'],
-            activeforeground=current_theme['activeforeground'],
-            activebackground=current_theme['activebackground'],
-            disabledforeground=current_theme['disabledforeground'],
+            foreground=theme.current['foreground'],
+            background=theme.current['background'],
+            activeforeground=theme.current['activeforeground'],
+            activebackground=theme.current['activebackground'],
+            disabledforeground=theme.current['disabledforeground'],
             font=tkFont.Font(family='Euro Caps', size=9, weight=tkFont.BOLD)
         )
         label_planet.grid(column=0, row=self.currentRow, sticky=tk.E)
 
         frame_matches = tk.Frame(self.containerFrame)
-        frame_matches.configure(background=current_theme['background'])
+        frame_matches.configure(background=theme.current['background'])
         frame_matches.grid(column=1, row=self.currentRow, sticky=tk.W)
 
         for match in matches:

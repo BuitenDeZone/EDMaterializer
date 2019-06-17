@@ -7,3 +7,4 @@
 .pylintrc export-ignore
 test_*.py export-ignore
 requirements.txt export-ignore
+.github/ export-ignore

@@ -34,15 +34,29 @@ class Application(tk.Frame):
         self.lblTest.grid()
         self.materialList = MaterialAlertListFrame(self)
 
-def add_matches():
+
+MATCHES = [MaterialMatch(Materials.ARSENIC, 2.3415), MaterialMatch(Materials.IRON, 20.33)]
+
+def add_matches_1():
     """Add test matches."""
+    APP.materialList.add_matches("1", MATCHES)
 
-    matches = [MaterialMatch(Materials.ARSENIC, 2.3415), MaterialMatch(Materials.IRON, 20.33)]
-    APP.materialList.add_matches("1", matches)
+def add_matches_2():
+    """Add test matches."""
+    APP.materialList.add_matches("4 b", MATCHES)
 
+def add_matches_3():
+    """Add test matches."""
+    APP.materialList.add_matches("2 b", MATCHES)
 
+def add_matches_4():
+    """Add test matches."""
+    APP.materialList.add_matches("2", MATCHES)
 
 ROOT = tk.Tk()
 APP = Application(master=ROOT)
-APP.after(1000, add_matches)
+APP.after(1000, add_matches_1)
+APP.after(2000, add_matches_2)
+APP.after(3000, add_matches_3)
+APP.after(4000, add_matches_4)
 APP.mainloop()

@@ -12,8 +12,78 @@ from l10n import Locale
 from theme import theme
 
 # Own materializer stuff
-from material_api import MaterialAlert, Materials
+from material_api import MaterialAlert, Materials, Rarities, Rarity
 
+
+class MaterialAlertsListPreferencesFrame(nb.Frame):
+    """
+    Creates a frame to manage the Material Alert List.
+    """
+
+    def __init__(self, master, material_alerts_list=None, **kw):
+        nb.Frame.__init__(self, master, **kw)
+
+        if material_alerts_list is None:
+            material_alerts_list = []
+
+        self.materialAlertsList = material_alerts_list
+        self.materialWidgets = dict()
+        self.create_widgets()
+        self.update_alerts()
+
+    def update_alerts(self):
+        for material, widgets in self.materialWidgets.items():
+            widgets[0].set(0)
+            widgets[1].delete(0, tk.END)
+
+        for alert in self.materialAlertsList:
+            self.materialWidgets[alert.material][0].set(1)
+            self.materialWidgets[alert.material][1].delete(0, tk.END)
+            self.materialWidgets[alert.material][1].insert(0, Locale.stringFromNumber(alert.threshold, 2))
+
+    def create_widgets(self):
+        very_common_frame = self.create_rarity_frame(self, Rarities.VERY_COMMON, column=0, row=0)
+        common_frame = self.create_rarity_frame(self, Rarities.COMMON, column=1, row=0)
+        rare_frame = self.create_rarity_frame(self, Rarities.RARE, column=0, row=1)
+        very_rare_frame = self.create_rarity_frame(self, Rarities.VERY_RARE, column=1, row=1)
+        self.grid()
+
+    def create_rarity_frame(self, parent, rarity, **gridopts):
+        wrap_frame = tk.Frame(parent)
+        wrap_frame.configure(padx=5, pady=5)
+        wrap_frame.grid()
+
+        materials_frame = tk.LabelFrame(wrap_frame, text=rarity.description)
+        materials_frame.configure(padx=5, pady=5)
+
+        index = 0
+        for material in Materials.by_rarity(rarity):
+            check_var = tk.IntVar(value=False)
+            checkbox = tk.Checkbutton(materials_frame, text=material.name, variable=check_var)
+            checkbox.grid(column=0, row=index, sticky=tk.W)
+
+            greater = tk.Label(materials_frame, text=">=")
+            greater.grid(column=1, row=index, sticky=tk.E)
+
+            entry = tk.Entry(materials_frame)
+            entry.configure(width=10, justify=tk.RIGHT)
+            entry.grid(column=2, row=index, sticky=tk.E)
+            index = index + 1
+            self.materialWidgets[material] = (check_var, entry)
+
+        materials_frame.grid_columnconfigure(2, weight=1)
+        materials_frame.grid(sticky=tk.N+tk.E+tk.S+tk.W)
+        gridopts['sticky'] = tk.N+tk.W+tk.E
+        wrap_frame.grid(**gridopts)
+
+        return materials_frame
+
+    def get_material_filters(self):
+
+        material_filters = []
+        for material, widgets in self.materialWidgets.items():
+            if widgets[0].get():
+                material_filters.append(MaterialAlert(material), widgets[1].get())
 
 class MaterialAlertListFrame(tk.Frame):
     """

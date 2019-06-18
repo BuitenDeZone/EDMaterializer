@@ -71,6 +71,13 @@ class Rarity(object):
     def __str__(self):
         return self.description
 
+    def __eq__(self, other):
+        if not isinstance(other, Rarity):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.rarityId == other.rarityId
+
 
 class Rarities(object):
     """
@@ -140,6 +147,11 @@ class Materials(object):
     LEAD        = Material('Lead', 27, 'Pb', Rarities.VERY_COMMON)
     BORON       = Material('Boron', 28, 'B', Rarities.COMMON)
     # pylint: enable=bad-whitespace
+
+
+    @classmethod
+    def by_rarity(cls, rarity):
+        return [material for material in cls.items() if material.rarity == rarity]
 
     @classmethod
     def by_name(cls, item):

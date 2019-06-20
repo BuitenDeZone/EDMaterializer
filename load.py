@@ -54,17 +54,25 @@ def add_test_matches_1():
         MaterialMatch(Materials.IRON, 20.33)])
 
 def add_test_matches_2():
-    this.materialAlertsFrame.add_matches("2 b", [
+    this.materialAlertsFrame.add_matches("2 B", [
         MaterialMatch(Materials.ARSENIC, 1.5),
         MaterialMatch(Materials.TUNGSTEN, 0.4)])
 
 def add_test_matches_3():
+    this.materialAlertsFrame.add_matches("2 A", [
+        MaterialMatch(Materials.VANADIUM, 5.9),
+        MaterialMatch(Materials.ARSENIC, 2.3)
+    ])
     this.materialAlertsFrame.add_matches("3", [
         MaterialMatch(Materials.ARSENIC, 1.5),
-        MaterialMatch(Materials.TUNGSTEN, 0.4)])
+        MaterialMatch(Materials.TUNGSTEN, 0.4),
+        MaterialMatch(Materials.POLONIUM, 0.5)
+    ])
+
 
 def clear_test_matches():
     this.materialAlertsFrame.clear_matches()
+
 
 def plugin_app(parent):
     """

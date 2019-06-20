@@ -12,6 +12,7 @@ from load import DEFAULT_THRESHOLDS, create_plugin_prefs, create_options_prefs
 
 this = sys.modules[__name__]  # For holding module globals
 
+
 class Application(tk.Frame):
     """
     Test application.

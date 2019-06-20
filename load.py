@@ -3,19 +3,56 @@ Plugin to help with finding planets with the materials you need while exploring.
 """
 
 import sys
+import Tkinter as tk
 
 # EDMC Components
 from config import config
+import myNotebook as nb
 
 # Own materializer stuff
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import FIELD_STAR_SYSTEM, VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
 from material_api import MaterialMatch, Materials
-from material_ui import MaterialAlertListSettingsFrame, MaterialAlertListSettings, MaterialAlertListFrame
+from material_ui import MaterialAlertsListPreferencesFrame, MaterialAlertListSettings, MaterialAlertListFrame
 
 
 VERSION = '0.1'
 this = sys.modules[__name__]  # For holding module globals
+
+
+# Based on https://tinyurl.com/mexgpnb
+DEFAULT_THRESHOLDS = {
+    Materials.ANTIMONY: 1.4,
+    Materials.ARSENIC: 2.6,
+    Materials.CADMIUM: 3.0,
+    Materials.CARBON: 22.0,
+    Materials.CHROMIUM: 16.4,
+    Materials.GERMANIUM: 5.6,
+    Materials.IRON: 38.1,
+    Materials.LEAD: 0.0,
+    Materials.MANGANESE: 15.2,
+    Materials.MERCURY: 1.7,
+    Materials.MOLYBDENUM: 2.6,
+    Materials.NICKEL: 28.8,
+    Materials.NIOBIUM: 2.6,
+    Materials.PHOSPHORUS: 14.1,
+    Materials.POLONIUM: 1.1,
+    Materials.RUTHENIUM: 2.5,
+    Materials.SELENIUM: 4.1,
+    Materials.SULPHUR: 26.1,
+    Materials.TECHNETIUM: 1.4,
+    Materials.TELLURIUM: 1.5,
+    Materials.TIN: 2.6,
+    Materials.TUNGSTEN: 2.1,
+    Materials.VANADIUM: 9.5,
+    Materials.YTTRIUM: 2.3,
+    Materials.ZINC: 10.3,
+    Materials.ZIRCONIUM: 4.6,
+}
+
+
+def create_plugin_prefs(parent, defaults, filters):
+    return MaterialAlertsListPreferencesFrame(parent, defaults, filters)
 
 
 def plugin_prefs(parent, _cmdr, _is_beta):
@@ -23,18 +60,20 @@ def plugin_prefs(parent, _cmdr, _is_beta):
     Return a TK Frame for adding to the ED:MC settings dialog.
     """
 
-    this.materialAlertListSettingsEditor = MaterialAlertListSettingsFrame(parent, this.materialAlertFilters)
-    return this.materialAlertListSettingsEditor
+    this.prefsFrame = nb.Frame(parent)
+
+    this.materialAlertListSettingsEditor = create_plugin_prefs(this.prefsFrame, DEFAULT_THRESHOLDS, this.materialAlertFilters)
+    this.materialAlertListSettingsEditor.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
+
+    return this.prefsFrame
 
 
 def prefs_changed(_cmdr, _is_beta):
     """
     Called when the preferences ED:MC dialog is closed: Save settings.
     """
-
-    this.materialAlertFilters = this.materialAlertListSettingsEditor.materialAlertsList
-    translated = MaterialAlertListSettings.translate_to_settings(this.materialAlertFilters)
-    config.set('material_filters', translated)
+    this.materialAlertFilters = this.materialAlertListSettingsEditor.get_material_filters()
+    config.set('material_filters', MaterialAlertListSettings.translate_to_settings(this.materialAlertFilters))
 
 
 def plugin_start(_plugin_dir):
@@ -42,8 +81,10 @@ def plugin_start(_plugin_dir):
     Called on plugin start.
     """
     this.currentSystem = None
+    raw_material_filters = [x for x in config.get('material_filters') if x]
+
     # Load known filters
-    this.materialAlertFilters = MaterialAlertListSettings.translate_from_settings(config.get('material_filters'))
+    this.materialAlertFilters = MaterialAlertListSettings.translate_from_settings(raw_material_filters)
     return 'Materializer'
 
 def add_test_matches_1():

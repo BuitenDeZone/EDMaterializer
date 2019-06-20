@@ -214,34 +214,53 @@ class MaterialAlertListSettings(object):
         :param materials: list with material and threshold.
         :return: list of MaterialAlert objects.
         """
-
         if materials is None:
             return list()
 
         alerts = list()
         for mat in materials:
+
             key, threshold = mat.split('>=')
+
             material = Materials.by_symbol(key)
             if material is None:
                 print "ERROR: Unknown material with symbol '{}'. Skipping.".format(key)
             else:
-                alert = MaterialAlert(material, Locale.numberFromString(threshold))
+                enabled = True
+                threshold = round(Locale.numberFromString(threshold) * 100) / 100.0
+                if threshold <= -100:
+                    threshold = (threshold * -1) - 100
+                    enabled = False
+
+                alert = MaterialAlert(material, round(threshold, 2), enabled)
                 alerts.append(alert)
 
         return alerts
 
     @classmethod
-    def translate_to_settings(cls, alerts):
+    def translate_to_settings(cls, alerts, clean=False):
         """
         Convert a list of MaterialAlerts into a string only list to store in settings.
         :param alerts: list of MaterialAlert objects.
+        :param clean: Omit disabled filters in the output
         :return: list of string representations of MaterialAlerts.
         """
 
+        result = []
         if alerts is None:
-            return list()
+            return result
 
-        return list("{}>={}".format(a.material.symbol, Locale.stringFromNumber(a.threshold, 2)) for a in alerts)
+        for alert in alerts:
+            if clean and alert.disabled:
+                continue
+
+            threshold = alert.threshold
+            if not alert.enabled:
+                threshold = (threshold * -1) - 100.0
+
+            result.append('{}>={}'.format(alert.material.symbol, Locale.stringFromNumber(threshold, 2)))
+
+        return result
 
 
 class MaterialAlertListSettingsFrame(nb.Frame):

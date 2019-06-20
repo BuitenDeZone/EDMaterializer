@@ -55,6 +55,17 @@ def create_plugin_prefs(parent, defaults, filters):
     return MaterialAlertsListPreferencesFrame(parent, defaults, filters)
 
 
+def create_options_prefs(parent):
+    frame = tk.LabelFrame(parent, text="General Options")
+    lbl = tk.Label(
+        frame, wrap=200, justify=tk.LEFT,
+        text="You can reset to defaults by clearing an entry and (dis)/enable it (again)."
+    )
+    lbl.grid()
+    frame.grid()
+    return frame
+
+
 def plugin_prefs(parent, _cmdr, _is_beta):
     """
     Return a TK Frame for adding to the ED:MC settings dialog.
@@ -64,6 +75,9 @@ def plugin_prefs(parent, _cmdr, _is_beta):
 
     this.materialAlertListSettingsEditor = create_plugin_prefs(this.prefsFrame, DEFAULT_THRESHOLDS, this.materialAlertFilters)
     this.materialAlertListSettingsEditor.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
+
+    this.optionsFrame = create_options_prefs(this.prefsFrame)
+    this.optionsFrame.grid(column=1, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
 
     return this.prefsFrame
 

@@ -5,7 +5,7 @@ This is a small app that does nothing to test the preferences frame.
 import sys
 import Tkinter as tk
 from material_ui import MaterialAlertListSettings
-from load import DEFAULT_THRESHOLDS, create_plugin_prefs
+from load import DEFAULT_THRESHOLDS, create_plugin_prefs, create_options_prefs
 from pprint import pprint
 
 this = sys.modules[__name__]  # For holding module globals
@@ -26,6 +26,8 @@ class Application(tk.Frame):
     def create_widgets(self):
         self.prefsFrame = create_plugin_prefs(self, DEFAULT_THRESHOLDS, self.filters)
         self.prefsFrame.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
+        self.optionsFrame = create_options_prefs(self)
+        self.optionsFrame.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
 
 
     def exit(self):

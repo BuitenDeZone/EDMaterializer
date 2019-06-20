@@ -9,3 +9,5 @@ test.py export-ignore
 test_*.py export-ignore
 requirements.txt export-ignore
 .github/ export-ignore
+.idea/ export-ignore
+Materializer.iml export-ignore

@@ -31,7 +31,10 @@ class MaterialAlert(object):
         self.enabled = enabled
 
     def __str__(self):
-        return "{m} >= {v}".format(m=self.material.name, v=self.threshold)
+        if self.enabled:
+            return "{m} >= {v}".format(m=self.material.name, v=self.threshold)
+        else:
+            return "{m} >= {v} (disabled)".format(m=self.material.name, v=self.threshold)
 
     def __eq__(self, other):
         if not isinstance(other, MaterialAlert):

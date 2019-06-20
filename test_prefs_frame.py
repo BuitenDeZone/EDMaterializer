@@ -11,10 +11,10 @@ class Application(tk.Frame):
     Test application.
     """
 
-    def __init__(self, testSettings, master=None):
+    def __init__(self, test_settings, master=None):
         tk.Frame.__init__(self, master, width=400, height=300)
         self.master = master
-        self.testSettings = testSettings
+        self.testSettings = test_settings
         self.grid()
         self.create_widgets()
 

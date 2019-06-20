@@ -15,6 +15,7 @@ FIELD_BODY_NAME = "BodyName"
 FIELD_LANDABLE = "Landable"
 FIELD_MATERIALS = "Materials"
 
+VALUE_EVENT_FSS_DISCOVERY_SCAN = "FSSDiscoveryScan"
 VALUE_EVENT_FSDJUMP = "FSDJump"
 VALUE_EVENT_SCAN = "Scan"
 VALUE_SCAN_TYPE_DETAILED = "Detailed"
@@ -25,12 +26,23 @@ class MaterialAlert(object):
     Represents a alert on a certain material based on a threshold.
     """
 
-    def __init__(self, material, threshold):
+    def __init__(self, material, threshold, enabled=True):
         self.material = material
         self.threshold = threshold
+        self.enabled = enabled
 
     def __str__(self):
-        return "{m} >= {v}".format(m=self.material.name, v=self.threshold)
+        if self.enabled:
+            return "{m} >= {v}".format(m=self.material.name, v=self.threshold)
+
+        return "{m} >= {v} (disabled)".format(m=self.material.name, v=self.threshold)
+
+    def __eq__(self, other):
+        if not isinstance(other, MaterialAlert):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return other.material == self.material and other.threshold == self.threshold and other.enabled == self.enabled
 
     def check_matches(self, materials):
         """
@@ -38,12 +50,12 @@ class MaterialAlert(object):
         :param materials: list of material dicts with a Name and Percent field.
         :return: returns a MaterialMatch or an empty list.
         """
-
-        for material_raw in materials:
-            material = Materials.by_name(material_raw[FIELD_NAME])
-            percent = material_raw[FIELD_PERCENT]
-            if self.material == material and percent >= self.threshold:
-                return MaterialMatch(material, percent)
+        if self.enabled:
+            for material_raw in materials:
+                material = Materials.by_name(material_raw[FIELD_NAME])
+                percent = material_raw[FIELD_PERCENT]
+                if self.material == material and percent >= self.threshold:
+                    return MaterialMatch(material, percent)
 
         return None
 
@@ -70,6 +82,13 @@ class Rarity(object):
 
     def __str__(self):
         return self.description
+
+    def __eq__(self, other):
+        if not isinstance(other, Rarity):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.rarityId == other.rarityId
 
 
 class Rarities(object):
@@ -141,18 +160,37 @@ class Materials(object):
     BORON       = Material('Boron', 28, 'B', Rarities.COMMON)
     # pylint: enable=bad-whitespace
 
+
     @classmethod
-    def by_name(cls, item):
-        """Find a material by its name (case-insensitive)"""
+    def by_rarity(cls, rarity):
+        """
+        Return a list of materials based on Rarity.
+        :param rarity: Wanted Rarity
+        :return: list with `Material`s
+        """
+
+        return [material for material in cls.items() if material.rarity == rarity]
+
+    @classmethod
+    def by_name(cls, name):
+        """
+        Find a material by its name (case-insensitive)
+        :param name: Name to look for.
+        :return: Found `Material` or `None`
+        """
 
         for i in cls.items():
-            if str(i.name).lower() == str(item).lower():
+            if str(i.name).lower() == str(name).lower():
                 return i
         return None
 
     @classmethod
     def by_symbol(cls, symbol):
-        """Find a material by its symbol (case-insensitive)"""
+        """
+        Find a material by its symbol (case-insensitive)
+        :param symbol: Symbol to look for
+        :return: Found `Material` or `None`
+        """
 
         for i in cls.items():
             if str(i.symbol).lower() == str(symbol).lower():
@@ -161,7 +199,11 @@ class Materials(object):
 
     @classmethod
     def by_id(cls, material_id):
-        """Find a material by it's ID"""
+        """
+        Find a material by it's ID.
+        :param material_id: `Materials.elementId` to look for
+        :return: Found `Material` or `None`
+        """
 
         for material in cls.items():
             if material.material_id == material_id:
@@ -170,12 +212,18 @@ class Materials(object):
 
     @classmethod
     def items(cls):
-        """List all materials"""
+        """
+        List all materials.
+        :return: List of all known `Material`s
+        """
 
         return [x[1] for x in inspect.getmembers(cls) if isinstance(x[1], Material)]
 
     @classmethod
     def item_names(cls):
-        """List all materials by their name"""
+        """
+        List all materials by their name.
+        :return: All material names.
+        """
 
         return [x.name for x in cls.items()]

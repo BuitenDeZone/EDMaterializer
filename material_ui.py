@@ -181,7 +181,6 @@ class MaterialAlertListFrame(tk.Frame):
         (re-)Generate the frame for all the matches.
         """
 
-
         if self.containerFrame is not None:
             self.containerFrame.grid_forget()
             self.containerFrame.destroy()

@@ -25,12 +25,20 @@ class MaterialAlert(object):
     Represents a alert on a certain material based on a threshold.
     """
 
-    def __init__(self, material, threshold):
+    def __init__(self, material, threshold, enabled=True):
         self.material = material
         self.threshold = threshold
+        self.enabled = enabled
 
     def __str__(self):
         return "{m} >= {v}".format(m=self.material.name, v=self.threshold)
+
+    def __eq__(self, other):
+        if not isinstance(other, MaterialAlert):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return other.material == self.material and other.threshold == self.threshold and other.enabled == self.enabled
 
     def check_matches(self, materials):
         """

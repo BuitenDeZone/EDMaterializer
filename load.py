@@ -11,7 +11,8 @@ import myNotebook as nb
 
 # Own materializer stuff
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
-from material_api import FIELD_STAR_SYSTEM, VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
+from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
+from material_api import VALUE_EVENT_FSS_DISCOVERY_SCAN
 from material_api import MaterialMatch, Materials
 from material_ui import MaterialAlertsListPreferencesFrame, MaterialAlertListSettings, MaterialAlertListFrame
 

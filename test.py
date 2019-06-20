@@ -1,13 +1,18 @@
+"""Tests."""
+
 import unittest
 from testfixtures import compare
 
 from material_ui import MaterialAlertListSettings
-from material_api import *
+from material_api import MaterialAlert, Materials
 
 
 class TestMaterialAlertListSettings(unittest.TestCase):
+    """Test cases for MaterialAlertListSettings helpers."""
 
-    def test_translate_from_settings(self):
+    def test_translate_from_settings(self):  # pylint: disable=no-self-use
+        """Translate from settings test."""
+
         settings = ['As>=30.00', 'Po>=-102.30', 'Zr>=0.00', 'B>=-100.00']
         expected = [
             MaterialAlert(Materials.ARSENIC, 30.0, True),
@@ -18,7 +23,9 @@ class TestMaterialAlertListSettings(unittest.TestCase):
         compare(MaterialAlertListSettings.translate_from_settings(settings), expected)
         # self.assertEqual('foo'.upper(), 'FOO')
 
-    def test_translate_to_settings(self):
+    def test_translate_to_settings(self):  # pylint: disable=no-self-use
+        """Translate to settings test."""
+
         alert_list = [
             MaterialAlert(Materials.ARSENIC, 30.0, True),
             MaterialAlert(Materials.POLONIUM, 2.3, False),

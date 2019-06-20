@@ -12,7 +12,6 @@ import myNotebook as nb
 # Own materializer stuff
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
-from material_api import VALUE_EVENT_FSS_DISCOVERY_SCAN
 from material_api import MaterialMatch, Materials
 from material_ui import MaterialAlertsListPreferencesFrame, MaterialAlertListSettings, MaterialAlertListFrame
 
@@ -53,10 +52,14 @@ DEFAULT_THRESHOLDS = {
 
 
 def create_plugin_prefs(parent, defaults, filters):
+    """Creates a new MaterialAlertsListPreferenceFrame."""
+
     return MaterialAlertsListPreferencesFrame(parent, defaults, filters)
 
 
 def create_options_prefs(parent):
+    """Create a new options frame."""
+
     frame = tk.LabelFrame(parent, text="General Options")
     lbl = tk.Label(
         frame, wrap=200, justify=tk.LEFT,
@@ -74,7 +77,11 @@ def plugin_prefs(parent, _cmdr, _is_beta):
 
     this.prefsFrame = nb.Frame(parent)
 
-    this.materialAlertListSettingsEditor = create_plugin_prefs(this.prefsFrame, DEFAULT_THRESHOLDS, this.materialAlertFilters)
+    this.materialAlertListSettingsEditor = create_plugin_prefs(
+        this.prefsFrame,
+        DEFAULT_THRESHOLDS,
+        this.materialAlertFilters
+    )
     this.materialAlertListSettingsEditor.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
 
     this.optionsFrame = create_options_prefs(this.prefsFrame)
@@ -110,11 +117,15 @@ def add_test_matches_1():
         MaterialMatch(Materials.IRON, 20.33)])
 
 def add_test_matches_2():
+    """Add test matches."""
+
     this.materialAlertsFrame.add_matches("2 B", [
         MaterialMatch(Materials.ARSENIC, 1.5),
         MaterialMatch(Materials.TUNGSTEN, 0.4)])
 
 def add_test_matches_3():
+    """Add test matches."""
+
     this.materialAlertsFrame.add_matches("2 A", [
         MaterialMatch(Materials.VANADIUM, 5.9),
         MaterialMatch(Materials.ARSENIC, 2.3)
@@ -127,6 +138,8 @@ def add_test_matches_3():
 
 
 def clear_test_matches():
+    """Test clearing matches from the result frame."""
+
     this.materialAlertsFrame.clear_matches()
 
 
@@ -147,10 +160,26 @@ def plugin_app(parent):
 
 
 def check_material_matches(materials, filters):
+    """
+    Checks each filter against the provided materials and returns matches.
+
+    :param materials: List of materials: array of [{"Name": <value>, "Percent": <value>}, ...]
+    :param filters: List of `MaterialAlert`s
+    :return: list of `MaterialMatch`es
+    """
+
     return [m for m in [f.check_matches(materials) for f in filters] if m is not None]
 
 
 def update_alert_frame(alert_frame, system, planet, materials, filters):
+    """
+    Update the result frame by getting the matches on a scan event
+    :param alert_frame: Frame with alerts
+    :param system: Current system name: Used to create the planet 'short' name
+    :param planet: Name of the planet
+    :param materials: List of found materials
+    :param filters: Filters to check against
+    """
     matches = check_material_matches(materials, filters)
     if matches:
         planetname = planet.replace(system, '')

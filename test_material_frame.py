@@ -10,7 +10,7 @@ import theme
 # Materializer plugin components
 from material_ui import MaterialAlertListFrame
 from material_ui import MaterialAlertListSettings
-from material_api import MaterialMatch, Materials, Rarities
+from material_api import MaterialMatch, Materials
 from load import update_alert_frame
 
 
@@ -132,6 +132,8 @@ TEST_SETS = {
 TEST_FILTERS = MaterialAlertListSettings.translate_from_settings(RULES)
 
 def update_materials():
+    """Add test data through update_alert_frame."""
+
     for planet, materials in TEST_SETS.items():
         update_alert_frame(APP.materialList, TEST_SYSTEM, planet, materials, TEST_FILTERS)
 

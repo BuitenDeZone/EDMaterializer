@@ -12,7 +12,7 @@ from l10n import Locale
 from theme import theme
 
 # Own materializer stuff
-from material_api import MaterialAlert, Materials, Rarities, Rarity
+from material_api import MaterialAlert, Materials, Rarities
 
 
 class MaterialAlertsListPreferencesFrame(tk.Frame):
@@ -33,10 +33,16 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
         self.update_alerts()
 
     def update_alerts(self):
-        for material, widgets in self.materialWidgets.items():
+        """
+        Update the UI with the current configured `MaterialAlert`s.
+        """
+
+        # Clear all
+        for _material, widgets in self.materialWidgets.items():
             widgets[0].set(0)
             widgets[1].delete(0, tk.END)
 
+        # Load all
         for alert in self.materialAlertsList:
             if alert.enabled:
                 self.materialWidgets[alert.material][0].set(alert.material.materialId)
@@ -46,7 +52,7 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
             self.materialWidgets[alert.material][1].insert(0, Locale.stringFromNumber(alert.threshold, 2))
 
     # bound methods documentation is kinda lacking. I hacked around.
-    def material_selectbox_event(self, event=None):
+    def material_selectbox_event(self, _event=None):
         """
         Executed whenever a checkbox is selected.
         If enabled and the value is still empty, a default value will be added.
@@ -62,6 +68,8 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
 
 
     def create_widgets(self):
+        """Creates different frames for each known `Rarity`."""
+
         self._create_rarity_frame(self, Rarities.VERY_COMMON, column=0, row=0)
         self._create_rarity_frame(self, Rarities.COMMON, column=1, row=0)
         self._create_rarity_frame(self, Rarities.RARE, column=0, row=1)
@@ -69,6 +77,11 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
         self.grid()
 
     def get_material_filters(self):
+        """
+        Convert the settings made in the UI in a list of `MaterialAlert`s.
+        :return: list of MaterialAlert`s
+        """
+
         material_filters = []
         for material, widgets in self.materialWidgets.items():
             enabled = True if widgets[0].get() > 0 else False
@@ -78,6 +91,14 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
         return material_filters
 
     def _create_rarity_frame(self, parent, rarity, **gridopts):
+        """
+        Helper that fills up a frame based on `Rarity`.
+        :param parent: Parent frame
+        :param rarity: Rarity to filter on
+        :param gridopts: Extra gridopts for the frame
+        :return: A frame
+        """
+
         wrap_frame = tk.Frame(parent)
         wrap_frame.configure(padx=5, pady=5)
         wrap_frame.grid()
@@ -114,7 +135,6 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
         wrap_frame.grid(**gridopts)
 
         return materials_frame
-
 
 
 class MaterialAlertListFrame(tk.Frame):
@@ -157,6 +177,10 @@ class MaterialAlertListFrame(tk.Frame):
         self.draw_matches()
 
     def draw_matches(self):
+        """
+        (re-)Generate the frame for all the matches.
+        """
+
 
         if self.containerFrame is not None:
             self.containerFrame.grid_forget()

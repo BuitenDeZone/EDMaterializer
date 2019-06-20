@@ -3,8 +3,8 @@ This is a small app that does nothing to test the preferences frame.
 """
 
 import Tkinter as tk
-from material_ui import MaterialAlertListSettingsFrame, MaterialAlertListSettings
-
+from material_ui import MaterialAlertListSettings
+from legacy import MaterialAlertListSettingsFrame
 
 class Application(tk.Frame):
     """

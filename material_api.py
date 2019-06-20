@@ -46,12 +46,12 @@ class MaterialAlert(object):
         :param materials: list of material dicts with a Name and Percent field.
         :return: returns a MaterialMatch or an empty list.
         """
-
-        for material_raw in materials:
-            material = Materials.by_name(material_raw[FIELD_NAME])
-            percent = material_raw[FIELD_PERCENT]
-            if self.material == material and percent >= self.threshold:
-                return MaterialMatch(material, percent)
+        if self.enabled:
+            for material_raw in materials:
+                material = Materials.by_name(material_raw[FIELD_NAME])
+                percent = material_raw[FIELD_PERCENT]
+                if self.material == material and percent >= self.threshold:
+                    return MaterialMatch(material, percent)
 
         return None
 

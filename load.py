@@ -131,6 +131,16 @@ def plugin_app(parent):
     return this.materialAlertsFrame
 
 
+def check_material_matches(materials, filters):
+    return [m for m in [f.check_matches(materials) for f in filters] if m is not None]
+
+
+def update_alert_frame(alert_frame, system, planet, materials, filters):
+    matches = check_material_matches(materials, filters)
+    if matches:
+        planetname = planet.replace(system, '')
+        alert_frame.add_matches(planetname, matches)
+
 def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
     """
     Handle the events.
@@ -139,14 +149,18 @@ def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
     if entry[FIELD_EVENT] == VALUE_EVENT_FSDJUMP:
         this.materialAlertsFrame.clear_matches()
 
+    #elif entry[FIELD_EVENT] == VALUE_EVENT_FSS_DISCOVERY_SCAN:
+        # do something i guess.
+
     elif entry[FIELD_EVENT] == VALUE_EVENT_SCAN \
             and entry[FIELD_SCAN_TYPE] == VALUE_SCAN_TYPE_DETAILED \
             and FIELD_LANDABLE in entry \
             and entry[FIELD_LANDABLE] is True:
 
-        materials = entry[FIELD_MATERIALS]
-        matches = [m for m in [f.check_matches(materials) for f in this.materialAlertFilters] if m is not None]
-        planetentry = str(entry[FIELD_BODY_NAME])
-        planetname = planetentry.replace(system, '')
-        if matches:
-            this.materialAlertsFrame.add_matches(planetname, matches)
+        update_alert_frame(
+            this.materialAlertsFrame,
+            system,
+            str(entry[FIELD_BODY_NAME]),
+            entry[FIELD_MATERIALS],
+            this.materialAlertFilters
+        )

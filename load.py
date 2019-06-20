@@ -185,6 +185,7 @@ def update_alert_frame(alert_frame, system, planet, materials, filters):
         planetname = planet.replace(system, '')
         alert_frame.add_matches(planetname, matches)
 
+
 def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
     """
     Handle the events.

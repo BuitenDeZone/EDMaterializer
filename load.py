@@ -97,11 +97,6 @@ def plugin_app(parent):
     """
 
     this.materialAlertsFrame = MaterialFilterMatchesFrame(parent)
-    # parent.after(1000, add_test_matches_1)
-    # parent.after(3000, add_test_matches_2)
-    # parent.after(5000, add_test_matches_3)
-    # parent.after(8000, clear_test_matches)
-    # parent.after(10000, add_test_matches_3)
     return this.materialAlertsFrame
 
 

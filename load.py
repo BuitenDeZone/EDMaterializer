@@ -49,49 +49,53 @@ DEFAULT_THRESHOLDS = {
 
 
 def plugin_prefs(parent, _cmdr, _is_beta):
-    """
-    Return a TK Frame for adding to the ED:MC settings dialog.
-    """
+    """Return a Tk Frame for adding to the EDMC settings dialog."""
 
     this.prefsFrame = nb.Frame(parent)
 
     this.materialAlertListSettingsEditor = create_plugin_prefs(
         this.prefsFrame,
         DEFAULT_THRESHOLDS,
-        this.materialAlertFilters
+        this.materialAlertFilters,
     )
-    this.materialAlertListSettingsEditor.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
+    this.materialAlertListSettingsEditor.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W)
 
     this.optionsFrame = create_options_prefs(this.prefsFrame)
-    this.optionsFrame.grid(column=1, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+    this.optionsFrame.grid(column=1, row=0, sticky=tk.N + tk.E + tk.S + tk.W)
 
     return this.prefsFrame
 
 
 def prefs_changed(_cmdr, _is_beta):
     """
-    Called when the preferences ED:MC dialog is closed: Save settings.
+    Update changed preferences.
+
+    Called by EDMC when the settings/config should be updated.
     """
+
     this.materialAlertFilters = this.materialAlertListSettingsEditor.get_material_filters()
     config.set('material_filters', MaterialFilterListConfigTranslator.translate_to_settings(this.materialAlertFilters))
 
 
 def plugin_start(_plugin_dir):
+    """Initialize plugin.
+
+    Called by EDMC on plugin start.
     """
-    Called on plugin start.
-    """
+
     this.currentSystem = None
     raw_material_filters = [x for x in config.get('material_filters') if x]
 
     # Load known filters
     this.materialAlertFilters = MaterialFilterListConfigTranslator.translate_from_settings(raw_material_filters)
-    print 'Plugin Materializer (version: {}) started...'.format(VERSION)
+    print 'Plugin Materializer (version: {version}) started...'.format(version=VERSION)
     return 'Materializer'
 
 
 def plugin_app(parent):
     """
     Initialize our frame to display our matches.
+
     We do not return it because that kinda messes with how EDMC handles
     frames from plugins. It is lazy loaded later on.
     """
@@ -101,15 +105,10 @@ def plugin_app(parent):
 
 
 def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
-    """
-    Handle the events.
-    """
+    """Handle the events."""
 
     if entry[FIELD_EVENT] == VALUE_EVENT_FSDJUMP:
         this.materialAlertsFrame.clear_matches()
-
-    #elif entry[FIELD_EVENT] == VALUE_EVENT_FSS_DISCOVERY_SCAN:
-    # do something i guess.
 
     elif entry[FIELD_EVENT] == VALUE_EVENT_SCAN \
             and entry[FIELD_SCAN_TYPE] == VALUE_SCAN_TYPE_DETAILED \
@@ -121,12 +120,12 @@ def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
             system,
             str(entry[FIELD_BODY_NAME]),
             entry[FIELD_MATERIALS],
-            this.materialAlertFilters
+            this.materialAlertFilters,
         )
 
 
 def create_plugin_prefs(parent, defaults, filters):
-    """Creates a new MaterialAlertsListPreferenceFrame."""
+    """Create a new MaterialAlertsListPreferenceFrame."""
 
     return MaterialFilterConfigFrame(parent, defaults, filters)
 
@@ -136,14 +135,14 @@ def create_options_prefs(parent):
 
     wrap_frame = tk.Frame(parent)
     wrap_frame.configure(padx=5, pady=5)
-    wrap_frame.grid(sticky=tk.N+tk.E+tk.W)
+    wrap_frame.grid(sticky=tk.N + tk.E + tk.W)
 
     frame = tk.LabelFrame(wrap_frame, text="General Options")
     frame.configure(padx=5, pady=5)
 
     lbl = tk.Label(
         frame, wrap=200, justify=tk.LEFT,
-        text="You can reset to defaults by clearing an entry and (dis)/enable it (again)."
+        text="You can reset to defaults by clearing an entry and (dis)/enable it (again).",
     )
     lbl.grid()
     frame.grid()
@@ -152,7 +151,7 @@ def create_options_prefs(parent):
 
 def check_material_matches(materials, filters):
     """
-    Checks each filter against the provided materials and returns matches.
+    Check each filter against the provided materials and returns matches.
 
     :param materials: List of materials: array of [{"Name": <value>, "Percent": <value>}, ...]
     :param filters: List of `MaterialFilter`s
@@ -164,7 +163,8 @@ def check_material_matches(materials, filters):
 
 def update_alert_frame(alert_frame, system, planet, materials, filters):
     """
-    Update the result frame by getting the matches on a scan event
+    Update the result frame by getting the matches on a scan event.
+
     :param alert_frame: Frame with alerts
     :param system: Current system name: Used to create the planet 'short' name
     :param planet: Name of the planet
@@ -175,4 +175,3 @@ def update_alert_frame(alert_frame, system, planet, materials, filters):
     if matches:
         planetname = planet.replace(system, '')
         alert_frame.add_matches(planetname, matches)
-

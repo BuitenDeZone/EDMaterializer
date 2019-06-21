@@ -11,7 +11,7 @@ import theme
 from material_ui import MaterialFilterMatchesFrame
 from material_ui import MaterialFilterListConfigTranslator
 from material_api import MaterialMatch, Materials
-from load import update_alert_frame
+from load import update_matches_frame
 
 
 class Application(tk.Frame):
@@ -136,10 +136,10 @@ TEST_SETS = {
 TEST_FILTERS = MaterialFilterListConfigTranslator.translate_from_settings(RULES)
 
 def update_materials():
-    """Add test data through update_alert_frame."""
+    """Add test data through update_matches_frame."""
 
     for planet, materials in TEST_SETS.items():
-        update_alert_frame(APP.materialList, TEST_SYSTEM, planet, materials, TEST_FILTERS)
+        update_matches_frame(APP.materialList, TEST_SYSTEM, planet, materials, TEST_FILTERS)
 
 
 ROOT = tk.Tk()

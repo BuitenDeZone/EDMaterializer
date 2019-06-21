@@ -3,12 +3,12 @@
 import unittest
 from testfixtures import compare
 
-from material_ui import MaterialAlertListSettings
+from material_ui import MaterialFilterListConfigTranslator
 from material_api import MaterialFilter, Materials
 
 
 class TestMaterialAlertListSettings(unittest.TestCase):
-    """Test cases for MaterialAlertListSettings helpers."""
+    """Test cases for MaterialFilterListConfigTranslator helpers."""
 
     def test_translate_from_settings(self):  # pylint: disable=no-self-use
         """Translate from settings test."""
@@ -20,7 +20,7 @@ class TestMaterialAlertListSettings(unittest.TestCase):
             MaterialFilter(Materials.ZIRCONIUM, 0.0, True),
             MaterialFilter(Materials.BORON, 0.0, False)
         ]
-        compare(MaterialAlertListSettings.translate_from_settings(settings), expected)
+        compare(MaterialFilterListConfigTranslator.translate_from_settings(settings), expected)
         # self.assertEqual('foo'.upper(), 'FOO')
 
     def test_translate_to_settings(self):  # pylint: disable=no-self-use
@@ -33,7 +33,7 @@ class TestMaterialAlertListSettings(unittest.TestCase):
             MaterialFilter(Materials.BORON, 0.0, False)
         ]
         expected = ['As>=30.00', 'Po>=-102.30', 'Zr>=0.00', 'B>=-100.00']
-        compare(MaterialAlertListSettings.translate_to_settings(alert_list), expected)
+        compare(MaterialFilterListConfigTranslator.translate_to_settings(alert_list), expected)
 
 
 if __name__ == '__main__':

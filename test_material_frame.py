@@ -9,7 +9,7 @@ import theme
 
 # Materializer plugin components
 from material_ui import MaterialFilterMatchesFrame
-from material_ui import MaterialAlertListSettings
+from material_ui import MaterialFilterListConfigTranslator
 from material_api import MaterialMatch, Materials
 from load import update_alert_frame
 
@@ -39,17 +39,21 @@ class Application(tk.Frame):
 
 MATCHES = [MaterialMatch(Materials.ARSENIC, 2.3415), MaterialMatch(Materials.IRON, 20.33)]
 
+
 def add_matches_1():
     """Add test matches."""
     APP.materialList.add_matches("1", MATCHES)
+
 
 def add_matches_2():
     """Add test matches."""
     APP.materialList.add_matches("4 b", MATCHES)
 
+
 def add_matches_3():
     """Add test matches."""
     APP.materialList.add_matches("2 b", MATCHES)
+
 
 def add_matches_4():
     """Add test matches."""
@@ -129,7 +133,7 @@ TEST_SETS = {
     ]
 }
 
-TEST_FILTERS = MaterialAlertListSettings.translate_from_settings(RULES)
+TEST_FILTERS = MaterialFilterListConfigTranslator.translate_from_settings(RULES)
 
 def update_materials():
     """Add test data through update_alert_frame."""

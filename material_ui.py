@@ -215,7 +215,7 @@ class MaterialFilterMatchesFrame(tk.Frame):
         self.containerFrame.grid()
 
 
-class MaterialAlertListSettings(object):
+class MaterialFilterListConfigTranslator(object):
     """Helper class to translate from settings to a list with material alerts."""
 
     @classmethod

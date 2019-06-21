@@ -1,6 +1,4 @@
-"""
-This is a small app that does nothing to test the materials frame.
-"""
+"""This is a small app that does nothing to test the materials frame."""
 
 import Tkinter as tk
 
@@ -15,11 +13,11 @@ from load import update_matches_frame
 
 
 class Application(tk.Frame):
-    """
-    Test application.
-    """
+    """Test application."""
 
     def __init__(self, master=None):
+        """Initialize the app."""
+
         tk.Frame.__init__(self, master, width=400, height=300)
         theme.theme._colors(self, 1)  # pylint: disable=protected-access
         self.master = master
@@ -69,71 +67,72 @@ TEST_MATERIAL_RARE = Materials.CADMIUM
 TEST_MATERIAL_VERY_RARE = Materials.POLONIUM
 
 RULES = {
-    "C>=10.00", "As>=0.00"
+    "C>=10.00", "As>=0.00",
 }
 
 TEST_SETS = {
     'Irk 1': [
         {
             "Name": TEST_MATERIAL_VERY_COMMON_1.name.lower(),
-            "Percent": 19.242706
+            "Percent": 19.242706,
         },
         {
             "Name": TEST_MATERIAL_VERY_COMMON_2.name.lower(),
-            "Percent": 17.019758
+            "Percent": 17.019758,
         },
         {
             "Name": TEST_MATERIAL_COMMON_2.name.lower(),
-            "Percent": 7.028986
+            "Percent": 7.028986,
         },
         {
             "Name": TEST_MATERIAL_VERY_RARE.name.lower(),
-            "Percent": 1.47208
-        }
+            "Percent": 1.47208,
+        },
     ],
     'Irk 2 B': [
         {
             "Name": TEST_MATERIAL_VERY_COMMON_2.name.lower(),
-            "Percent": 17.019758
+            "Percent": 17.019758,
         },
         {
             "Name": TEST_MATERIAL_COMMON_1.name.lower(),
-            "Percent": 7.028986
+            "Percent": 7.028986,
         },
         {
             "Name": TEST_MATERIAL_RARE.name.lower(),
-            "Percent": 1.47208
-        }
+            "Percent": 1.47208,
+        },
     ],
     'Irk 8 C 3': [
         {
             "Name": TEST_MATERIAL_VERY_COMMON_1.name.lower(),
-            "Percent": 7.028986
+            "Percent": 7.028986,
         },
         {
             "Name": TEST_MATERIAL_VERY_COMMON_2.name.lower(),
-            "Percent": 7.028986
+            "Percent": 7.028986,
         },
         {
             "Name": TEST_MATERIAL_COMMON_1.name.lower(),
-            "Percent": 7.028986
+            "Percent": 7.028986,
         },
         {
             "Name": TEST_MATERIAL_COMMON_2.name.lower(),
-            "Percent": 7.028986
+            "Percent": 7.028986,
         },
         {
             "Name": TEST_MATERIAL_RARE.name.lower(),
-            "Percent": 7.028986
+            "Percent": 7.028986,
         },
         {
             "Name": TEST_MATERIAL_VERY_RARE.name.lower(),
-            "Percent": 7.028986
-        }
-    ]
+            "Percent": 7.028986,
+        },
+    ],
 }
 
 TEST_FILTERS = MaterialFilterListConfigTranslator.translate_from_settings(RULES)
+
 
 def update_materials():
     """Add test data through update_matches_frame."""
@@ -145,7 +144,7 @@ def update_materials():
 ROOT = tk.Tk()
 APP = Application(master=ROOT)
 APP.after(1000, update_materials)
-#APP.after(2000, add_matches_2)
-#APP.after(3000, add_matches_3)
-#APP.after(4000, add_matches_4)
+# APP.after(2000, add_matches_2)
+# APP.after(3000, add_matches_3)
+# APP.after(4000, add_matches_4)
 APP.mainloop()

@@ -5,6 +5,7 @@ import glob
 import os
 from version import VERSION
 
+
 @task(
     aliases=["flake8", "pep8"],
     help={
@@ -22,7 +23,7 @@ def lint(ctx, filename=None, envdir=['env', 'venv'], noglob=False):
     :param noglob: Disable globbing in the filename.
     """
 
-    excludes = ['.git' ]
+    excludes = ['.git']
     if isinstance(envdir, str):
         excludes.append(str)
     else:
@@ -58,8 +59,8 @@ def release(ctx, out='out'):
     number in the prefix.
     """
 
-    command = 'git archive {} --prefix Materializer/ --format=zip --output {}/Materializer-{}.zip'.format(
-        VERSION, out, VERSION)
+    command = 'git archive {tag} --prefix Materializer/ --format=zip --output {out}/Materializer-{tag}.zip'.format(
+        tag=VERSION, out=out)
 
     print("Running command: '" + command + "'")
     if not os.path.isdir(out):

@@ -1,6 +1,4 @@
-"""
-This is a small app that does nothing to test the preferences frame.
-"""
+"""This is a small app that does nothing to test the preferences frame."""
 
 import sys
 import Tkinter as tk
@@ -14,29 +12,28 @@ this = sys.modules[__name__]  # For holding module globals
 
 
 class Application(tk.Frame):
-    """
-    Test application.
-    """
+    """Test application."""
 
     def __init__(self, filters, master=None):
+        """Initialize the app."""
+
         tk.Frame.__init__(self, master, width=400, height=300)
         self.master = master
         self.filters = filters
         self.create_widgets()
         self.grid()
-        master.protocol("WM_DELETE_WINDOW", self.exit)
+        master.protocol("WM_DELETE_WINDOW", self._exit)
 
     def create_widgets(self):
         """Create widgets."""
 
         self.prefsFrame = create_material_filter_prefs(self, DEFAULT_THRESHOLDS, self.filters)
-        self.prefsFrame.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
+        self.prefsFrame.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W)
         self.optionsFrame = create_options_prefs(self)
-        self.optionsFrame.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.optionsFrame.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
 
-
-    def exit(self):
-        """Executed on exit."""
+    def _exit(self):
+        """Clean up and exit."""
 
         try:
             print "Bye!"
@@ -75,6 +72,7 @@ TESTLIST = ['Sb>=-100.00',
             'B>=-100.00']
 
 TESTSETTINGS = MaterialFilterListConfigTranslator.translate_from_settings(TESTLIST)
+
 # print "From test settings:"
 # for filter in TESTSETTINGS:
 #     pprint(filter.__str__())

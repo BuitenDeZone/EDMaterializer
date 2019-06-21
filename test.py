@@ -18,7 +18,7 @@ class TestMaterialAlertListSettings(unittest.TestCase):
             MaterialFilter(Materials.ARSENIC, 30.0, True),
             MaterialFilter(Materials.POLONIUM, 2.3, False),
             MaterialFilter(Materials.ZIRCONIUM, 0.0, True),
-            MaterialFilter(Materials.BORON, 0.0, False)
+            MaterialFilter(Materials.BORON, 0.0, False),
         ]
         compare(MaterialFilterListConfigTranslator.translate_from_settings(settings), expected)
         # self.assertEqual('foo'.upper(), 'FOO')
@@ -30,7 +30,7 @@ class TestMaterialAlertListSettings(unittest.TestCase):
             MaterialFilter(Materials.ARSENIC, 30.0, True),
             MaterialFilter(Materials.POLONIUM, 2.3, False),
             MaterialFilter(Materials.ZIRCONIUM, 0, True),
-            MaterialFilter(Materials.BORON, 0.0, False)
+            MaterialFilter(Materials.BORON, 0.0, False),
         ]
         expected = ['As>=30.00', 'Po>=-102.30', 'Zr>=0.00', 'B>=-100.00']
         compare(MaterialFilterListConfigTranslator.translate_to_settings(alert_list), expected)

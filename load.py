@@ -178,4 +178,3 @@ def update_matches_frame(filter_match_frame, system, planet, materials, filters)
     if matches:
         planet_name = planet.replace(system, '')
         filter_match_frame.add_matches(planet_name, matches)
-

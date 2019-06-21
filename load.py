@@ -12,7 +12,7 @@ import myNotebook as nb
 # Own materializer stuff
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
-from material_api import MaterialMatch, Materials
+from material_api import Materials
 from material_ui import MaterialAlertsListPreferencesFrame, MaterialAlertListSettings, MaterialAlertListFrame
 
 
@@ -49,25 +49,6 @@ DEFAULT_THRESHOLDS = {
     Materials.ZINC: 10.3,
     Materials.ZIRCONIUM: 4.6,
 }
-
-
-def create_plugin_prefs(parent, defaults, filters):
-    """Creates a new MaterialAlertsListPreferenceFrame."""
-
-    return MaterialAlertsListPreferencesFrame(parent, defaults, filters)
-
-
-def create_options_prefs(parent):
-    """Create a new options frame."""
-
-    frame = tk.LabelFrame(parent, text="General Options")
-    lbl = tk.Label(
-        frame, wrap=200, justify=tk.LEFT,
-        text="You can reset to defaults by clearing an entry and (dis)/enable it (again)."
-    )
-    lbl.grid()
-    frame.grid()
-    return frame
 
 
 def plugin_prefs(parent, _cmdr, _is_beta):
@@ -109,39 +90,6 @@ def plugin_start(_plugin_dir):
     this.materialAlertFilters = MaterialAlertListSettings.translate_from_settings(raw_material_filters)
     return 'Materializer'
 
-def add_test_matches_1():
-    """Add test matches."""
-
-    this.materialAlertsFrame.add_matches("1", [
-        MaterialMatch(Materials.ARSENIC, 2.3415),
-        MaterialMatch(Materials.IRON, 20.33)])
-
-def add_test_matches_2():
-    """Add test matches."""
-
-    this.materialAlertsFrame.add_matches("2 B", [
-        MaterialMatch(Materials.ARSENIC, 1.5),
-        MaterialMatch(Materials.TUNGSTEN, 0.4)])
-
-def add_test_matches_3():
-    """Add test matches."""
-
-    this.materialAlertsFrame.add_matches("2 A", [
-        MaterialMatch(Materials.VANADIUM, 5.9),
-        MaterialMatch(Materials.ARSENIC, 2.3)
-    ])
-    this.materialAlertsFrame.add_matches("3", [
-        MaterialMatch(Materials.ARSENIC, 1.5),
-        MaterialMatch(Materials.TUNGSTEN, 0.4),
-        MaterialMatch(Materials.POLONIUM, 0.5)
-    ])
-
-
-def clear_test_matches():
-    """Test clearing matches from the result frame."""
-
-    this.materialAlertsFrame.clear_matches()
-
 
 def plugin_app(parent):
     """
@@ -157,6 +105,50 @@ def plugin_app(parent):
     # parent.after(8000, clear_test_matches)
     # parent.after(10000, add_test_matches_3)
     return this.materialAlertsFrame
+
+
+def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
+    """
+    Handle the events.
+    """
+
+    if entry[FIELD_EVENT] == VALUE_EVENT_FSDJUMP:
+        this.materialAlertsFrame.clear_matches()
+
+    #elif entry[FIELD_EVENT] == VALUE_EVENT_FSS_DISCOVERY_SCAN:
+    # do something i guess.
+
+    elif entry[FIELD_EVENT] == VALUE_EVENT_SCAN \
+            and entry[FIELD_SCAN_TYPE] == VALUE_SCAN_TYPE_DETAILED \
+            and FIELD_LANDABLE in entry \
+            and entry[FIELD_LANDABLE] is True:
+
+        update_alert_frame(
+            this.materialAlertsFrame,
+            system,
+            str(entry[FIELD_BODY_NAME]),
+            entry[FIELD_MATERIALS],
+            this.materialAlertFilters
+        )
+
+
+def create_plugin_prefs(parent, defaults, filters):
+    """Creates a new MaterialAlertsListPreferenceFrame."""
+
+    return MaterialAlertsListPreferencesFrame(parent, defaults, filters)
+
+
+def create_options_prefs(parent):
+    """Create a new options frame."""
+
+    frame = tk.LabelFrame(parent, text="General Options")
+    lbl = tk.Label(
+        frame, wrap=200, justify=tk.LEFT,
+        text="You can reset to defaults by clearing an entry and (dis)/enable it (again)."
+    )
+    lbl.grid()
+    frame.grid()
+    return frame
 
 
 def check_material_matches(materials, filters):
@@ -185,27 +177,3 @@ def update_alert_frame(alert_frame, system, planet, materials, filters):
         planetname = planet.replace(system, '')
         alert_frame.add_matches(planetname, matches)
 
-
-def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
-    """
-    Handle the events.
-    """
-
-    if entry[FIELD_EVENT] == VALUE_EVENT_FSDJUMP:
-        this.materialAlertsFrame.clear_matches()
-
-    #elif entry[FIELD_EVENT] == VALUE_EVENT_FSS_DISCOVERY_SCAN:
-        # do something i guess.
-
-    elif entry[FIELD_EVENT] == VALUE_EVENT_SCAN \
-            and entry[FIELD_SCAN_TYPE] == VALUE_SCAN_TYPE_DETAILED \
-            and FIELD_LANDABLE in entry \
-            and entry[FIELD_LANDABLE] is True:
-
-        update_alert_frame(
-            this.materialAlertsFrame,
-            system,
-            str(entry[FIELD_BODY_NAME]),
-            entry[FIELD_MATERIALS],
-            this.materialAlertFilters
-        )

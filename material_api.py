@@ -1,6 +1,4 @@
-"""
-Helpers for the Materializer plugin.
-"""
+"""Helpers/Object Model for the Materializer plugin."""
 
 import inspect
 
@@ -22,22 +20,36 @@ VALUE_SCAN_TYPE_DETAILED = "Detailed"
 
 
 class MaterialFilter(object):
-    """
-    Represents a filter on a certain material based on a threshold.
-    """
+    """Represents a filter on a certain material based on a threshold."""
 
     def __init__(self, material, threshold, enabled=True):
+        """Create a new `MaterialFilter`.
+
+        :param material: The material we will be matching against.
+        :param threshold: Minimum value before we match.
+        :param enabled: Enable or disable this rule.
+        """
         self.material = material
         self.threshold = threshold
         self.enabled = enabled
 
     def __str__(self):
+        """Return a string representation."""
+
         if self.enabled:
             return "{m} >= {v}".format(m=self.material.name, v=self.threshold)
 
         return "{m} >= {v} (disabled)".format(m=self.material.name, v=self.threshold)
 
     def __eq__(self, other):
+        """
+        Check if we are equal to another object.
+
+        MaterialFilters are considered equal when they have all the same attribute values.
+        :param other: object to test against
+        :return: `True` if all attributes of both objects match. `False` in all other cases.
+        """
+
         if not isinstance(other, MaterialFilter):
             # don't attempt to compare against unrelated types
             return NotImplemented
@@ -47,6 +59,7 @@ class MaterialFilter(object):
     def check_matches(self, materials):
         """
         Check if any materials in the list are a match for our threshold.
+
         :param materials: list of material dicts with a Name and Percent field.
         :return: returns a MaterialMatch or an empty list.
         """
@@ -61,29 +74,43 @@ class MaterialFilter(object):
 
 
 class MaterialMatch(object):
-    """
-    Represents a match for a material and a threshold.
-    """
+    """Represents a match for a material and a threshold."""
 
     def __init__(self, material, percent):
+        """Create a new `MaterialMatch`.
+
+        :param material: `Material` that has matched.
+        :param percent: percentage the matched material on a planet.
+        """
+
         self.material = material
         self.percent = percent
 
 
 class Rarity(object):
-    """
-    Represents a certain rarity for materials.
-    """
+    """Represents a certain rarity for materials."""
 
     def __init__(self, rarity_id, desc, label_color):
+        """Create a new rarity.
+
+        :param rarity_id: Unique id for the rarity.
+        :param desc: Description.
+        :param label_color: Color representation.
+        """
         self.rarityId = rarity_id
         self.description = desc
         self.labelColor = label_color
 
     def __str__(self):
+        """Return a string representation of the `Rarity`: its description."""
+
         return self.description
 
     def __eq__(self, other):
+        """Check if we are equel to an object or not.
+
+        `Rarity`s are considered equal if the rarityId matches.
+        """
         if not isinstance(other, Rarity):
             # don't attempt to compare against unrelated types
             return NotImplemented
@@ -92,9 +119,7 @@ class Rarity(object):
 
 
 class Rarities(object):
-    """
-    Different types of Rarity grades.
-    """
+    """Different types of Rarity grades."""
 
     VERY_COMMON = Rarity(1, 'Very Common', '#5bc0de')
     COMMON = Rarity(2, 'Common', '#62c462')
@@ -103,20 +128,34 @@ class Rarities(object):
 
 
 class Material(object):
-    """
-    Represents a Material.
-    """
+    """A Material."""
 
     def __init__(self, name, material_id, symbol, rarity):
+        """
+        Create a new material.
+
+        :param name: Full name of the material
+        :param material_id: Unique id
+        :param symbol: Short symbol representation
+        :param rarity: `Rarity` grade
+        """
+
         self.name = name
         self.materialId = material_id
         self.symbol = symbol
         self.rarity = rarity
 
     def __str__(self):
+        """Return the string representation: the name."""
+
         return self.name
 
     def __eq__(self, other):
+        """Check if we are equel to an object or not.
+
+        `Material`s are considered equal if they have the same materialId.
+        """
+
         if not isinstance(other, Material):
             # don't attempt to compare against unrelated types
             return NotImplemented
@@ -125,46 +164,44 @@ class Material(object):
 
 
 class Materials(object):
-    """
-    List of known planetary materials.
-    """
+    """List of known planetary materials."""
 
     # pylint: disable=bad-whitespace
-    ANTIMONY    = Material('Antimony', 1, 'Sb', Rarities.VERY_RARE)
-    ARSENIC     = Material('Arsenic', 2, 'As', Rarities.COMMON)
-    CADMIUM     = Material('Cadmium', 3, 'Cd', Rarities.RARE)
-    CARBON      = Material('Carbon', 4, 'C', Rarities.VERY_COMMON)
-    CHROMIUM    = Material('Chromium', 5, 'Cr', Rarities.COMMON)
-    GERMANIUM   = Material('Germanium', 6, 'Ge', Rarities.COMMON)
-    IRON        = Material('Iron', 7, 'Fe', Rarities.VERY_COMMON)
-    MANGANESE   = Material('Manganese', 8, 'Mn', Rarities.COMMON)
-    MERCURY     = Material('Mercury', 9, 'Hg', Rarities.RARE)
-    MOLYBDENUM  = Material('Molybdenum', 10, 'Mo', Rarities.RARE)
-    NICKEL      = Material('Nickel', 11, 'Ni', Rarities.VERY_COMMON)
-    NIOBIUM     = Material('Niobium', 12, 'Nb', Rarities.RARE)
-    PHOSPHORUS  = Material('Phosphorus', 13, 'P', Rarities.VERY_COMMON)
-    POLONIUM    = Material('Polonium', 14, 'Po', Rarities.VERY_RARE)
-    RUTHENIUM   = Material('Ruthenium', 15, 'Ru', Rarities.VERY_RARE)
-    SELENIUM    = Material('Selenium', 16, 'Se', Rarities.COMMON)
-    SULPHUR     = Material('Sulphur', 17, 'S', Rarities.VERY_COMMON)
-    TECHNETIUM  = Material('Technetium', 18, 'Tc', Rarities.VERY_RARE)
-    TELLURIUM   = Material('Tellurium', 19, 'Te', Rarities.VERY_RARE)
-    TIN         = Material('Tin', 20, 'Sn', Rarities.RARE)
-    TUNGSTEN    = Material('Tungsten', 21, 'W', Rarities.RARE)
-    VANADIUM    = Material('Vanadium', 22, 'V', Rarities.COMMON)
-    YTTRIUM     = Material('Yttrium', 23, 'Y', Rarities.VERY_RARE)
-    ZINC        = Material('Zinc', 24, 'Zn', Rarities.COMMON)
-    ZIRCONIUM   = Material('Zirconium', 25, 'Zr', Rarities.COMMON)
-    RHENIUM     = Material('Rhenium', 26, 'Re', Rarities.VERY_COMMON)
-    LEAD        = Material('Lead', 27, 'Pb', Rarities.VERY_COMMON)
-    BORON       = Material('Boron', 28, 'B', Rarities.COMMON)
+    ANTIMONY    = Material('Antimony', 1, 'Sb', Rarities.VERY_RARE)  # noqa: E221
+    ARSENIC     = Material('Arsenic', 2, 'As', Rarities.COMMON)  # noqa: E221
+    CADMIUM     = Material('Cadmium', 3, 'Cd', Rarities.RARE)  # noqa: E221
+    CARBON      = Material('Carbon', 4, 'C', Rarities.VERY_COMMON)  # noqa: E221
+    CHROMIUM    = Material('Chromium', 5, 'Cr', Rarities.COMMON)  # noqa: E221
+    GERMANIUM   = Material('Germanium', 6, 'Ge', Rarities.COMMON)  # noqa: E221
+    IRON        = Material('Iron', 7, 'Fe', Rarities.VERY_COMMON)  # noqa: E221
+    MANGANESE   = Material('Manganese', 8, 'Mn', Rarities.COMMON)  # noqa: E221
+    MERCURY     = Material('Mercury', 9, 'Hg', Rarities.RARE)  # noqa: E221
+    MOLYBDENUM  = Material('Molybdenum', 10, 'Mo', Rarities.RARE)  # noqa: E221
+    NICKEL      = Material('Nickel', 11, 'Ni', Rarities.VERY_COMMON)  # noqa: E221
+    NIOBIUM     = Material('Niobium', 12, 'Nb', Rarities.RARE)  # noqa: E221
+    PHOSPHORUS  = Material('Phosphorus', 13, 'P', Rarities.VERY_COMMON)  # noqa: E221
+    POLONIUM    = Material('Polonium', 14, 'Po', Rarities.VERY_RARE)  # noqa: E221
+    RUTHENIUM   = Material('Ruthenium', 15, 'Ru', Rarities.VERY_RARE)  # noqa: E221
+    SELENIUM    = Material('Selenium', 16, 'Se', Rarities.COMMON)  # noqa: E221
+    SULPHUR     = Material('Sulphur', 17, 'S', Rarities.VERY_COMMON)  # noqa: E221
+    TECHNETIUM  = Material('Technetium', 18, 'Tc', Rarities.VERY_RARE)  # noqa: E221
+    TELLURIUM   = Material('Tellurium', 19, 'Te', Rarities.VERY_RARE)  # noqa: E221
+    TIN         = Material('Tin', 20, 'Sn', Rarities.RARE)  # noqa: E221
+    TUNGSTEN    = Material('Tungsten', 21, 'W', Rarities.RARE)  # noqa: E221
+    VANADIUM    = Material('Vanadium', 22, 'V', Rarities.COMMON)  # noqa: E221
+    YTTRIUM     = Material('Yttrium', 23, 'Y', Rarities.VERY_RARE)  # noqa: E221
+    ZINC        = Material('Zinc', 24, 'Zn', Rarities.COMMON)  # noqa: E221
+    ZIRCONIUM   = Material('Zirconium', 25, 'Zr', Rarities.COMMON)  # noqa: E221
+    RHENIUM     = Material('Rhenium', 26, 'Re', Rarities.VERY_COMMON)  # noqa: E221
+    LEAD        = Material('Lead', 27, 'Pb', Rarities.VERY_COMMON)  # noqa: E221
+    BORON       = Material('Boron', 28, 'B', Rarities.COMMON)  # noqa: E221
     # pylint: enable=bad-whitespace
-
 
     @classmethod
     def by_rarity(cls, rarity):
         """
-        Return a list of materials based on Rarity.
+        Return a list of materials based on `Rarity`.
+
         :param rarity: Wanted Rarity
         :return: list with `Material`s
         """
@@ -174,7 +211,8 @@ class Materials(object):
     @classmethod
     def by_name(cls, name):
         """
-        Find a material by its name (case-insensitive)
+        Find a material by its name (case-insensitive).
+
         :param name: Name to look for.
         :return: Found `Material` or `None`
         """
@@ -187,7 +225,8 @@ class Materials(object):
     @classmethod
     def by_symbol(cls, symbol):
         """
-        Find a material by its symbol (case-insensitive)
+        Find a material by its symbol (case-insensitive).
+
         :param symbol: Symbol to look for
         :return: Found `Material` or `None`
         """
@@ -201,7 +240,8 @@ class Materials(object):
     def by_id(cls, material_id):
         """
         Find a material by it's ID.
-        :param material_id: `Materials.elementId` to look for
+
+        :param material_id: `Materials.elementId` to look for.
         :return: Found `Material` or `None`
         """
 
@@ -214,6 +254,7 @@ class Materials(object):
     def items(cls):
         """
         List all materials.
+
         :return: List of all known `Material`s
         """
 
@@ -223,6 +264,7 @@ class Materials(object):
     def item_names(cls):
         """
         List all materials by their name.
+
         :return: All material names.
         """
 

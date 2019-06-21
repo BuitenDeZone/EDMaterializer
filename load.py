@@ -1,6 +1,4 @@
-"""
-Plugin to help with finding planets with the materials you need while exploring.
-"""
+"""Plugin to help with finding planets with the materials you need while exploring."""
 
 import sys
 import Tkinter as tk
@@ -13,7 +11,7 @@ import myNotebook as nb
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
 from material_api import Materials
-from material_ui import MaterialAlertsListPreferencesFrame, MaterialAlertListSettings, MaterialAlertListFrame
+from material_ui import MaterialFilterConfigFrame, MaterialAlertListSettings, MaterialAlertListFrame 
 from version import VERSION
 
 this = sys.modules[__name__]  # For holding module globals
@@ -135,7 +133,7 @@ def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
 def create_plugin_prefs(parent, defaults, filters):
     """Creates a new MaterialAlertsListPreferenceFrame."""
 
-    return MaterialAlertsListPreferencesFrame(parent, defaults, filters)
+    return MaterialFilterConfigFrame(parent, defaults, filters)
 
 
 def create_options_prefs(parent):

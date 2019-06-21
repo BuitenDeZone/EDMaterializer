@@ -12,7 +12,7 @@ from theme import theme
 from material_api import MaterialFilter, Materials, Rarities
 
 
-class MaterialAlertsListPreferencesFrame(tk.Frame):
+class MaterialFilterConfigFrame(tk.Frame):
     """Creates a frame to manage the Material Alert List."""
 
     def __init__(self, master, default_thresholds, material_filter_list=None, **kw):
@@ -28,6 +28,17 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
         self.defaultThresholds = default_thresholds
         self.create_widgets()
         self.update_alerts()
+
+    def create_widgets(self):
+        """Create all the different frames for each known `Rarity`."""
+
+        self._create_rarity_frame(self, Rarities.VERY_COMMON, column=0, row=0)
+        self._create_rarity_frame(self, Rarities.COMMON, column=1, row=0)
+        self._create_rarity_frame(self, Rarities.RARE, column=0, row=1)
+        self._create_rarity_frame(self, Rarities.VERY_RARE, column=1, row=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid()
 
     def update_alerts(self):
         """Update the UI with the current configured `MaterialFilter`s."""
@@ -46,8 +57,23 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
             self.materialWidgets[alert.material][1].delete(0, tk.END)
             self.materialWidgets[alert.material][1].insert(0, Locale.stringFromNumber(alert.threshold, 2))
 
+    def get_material_filters(self):
+        """
+        Convert the settings made in the UI in a list of `MaterialFilter`s.
+
+        :return: list of MaterialFilter`s
+        """
+
+        material_filters = []
+        for material, widgets in self.materialWidgets.items():
+            enabled = True if widgets[0].get() > 0 else False
+            entry_value = widgets[1].get() if widgets[1].get() else '0.0'
+            threshold = round(Locale.numberFromString(entry_value) * 100) / 100.0
+            material_filters.append(MaterialFilter(material, threshold, enabled))
+        return material_filters
+
     # bound methods documentation is kinda lacking. I hacked around.
-    def material_selectbox_event(self, _event=None):
+    def _material_selectbox_event(self, _event=None):
         """
         Perform updates when a selectbox's selection changes.
 
@@ -61,32 +87,6 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
             if checkbox_val > 0 and entry_value.strip() == "":
                 widgets[1].delete(0, tk.END)
                 widgets[1].insert(0, Locale.stringFromNumber(self.defaultThresholds.get(material, 0.0), 2))
-
-    def create_widgets(self):
-        """Create all the different frames for each known `Rarity`."""
-
-        self._create_rarity_frame(self, Rarities.VERY_COMMON, column=0, row=0)
-        self._create_rarity_frame(self, Rarities.COMMON, column=1, row=0)
-        self._create_rarity_frame(self, Rarities.RARE, column=0, row=1)
-        self._create_rarity_frame(self, Rarities.VERY_RARE, column=1, row=1)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid()
-
-    def get_material_filters(self):
-        """
-        Convert the settings made in the UI in a list of `MaterialAlert`s.
-
-        :return: list of MaterialAlert`s
-        """
-
-        material_filters = []
-        for material, widgets in self.materialWidgets.items():
-            enabled = True if widgets[0].get() > 0 else False
-            entry_value = widgets[1].get() if widgets[1].get() else '0.0'
-            threshold = round(Locale.numberFromString(entry_value) * 100) / 100.0
-            material_filters.append(MaterialAlert(material, threshold, enabled))
-        return material_filters
 
     def _create_rarity_frame(self, parent, rarity, **gridopts):
         """
@@ -117,7 +117,7 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
                 variable=check_var,
                 onvalue=material.materialId,
                 offvalue=0,
-                command=self.material_selectbox_event,
+                command=self._material_selectbox_event,
             )
             checkbox.grid(column=0, row=index, sticky=tk.W)
 

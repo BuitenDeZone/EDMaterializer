@@ -1,6 +1,8 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 
+version.py export-subst
+
 # For the sake of clean releases
 .gitattributes export-ignore
 .gitignore export-ignore

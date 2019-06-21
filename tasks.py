@@ -1,8 +1,11 @@
 """Configures all tasks to run with invoke."""
 
-from invoke import task
 import glob
 import os
+import sys
+from subprocess import check_output
+
+from invoke import task
 from version import VERSION
 
 
@@ -50,20 +53,37 @@ def lint(ctx, filename=None, envdir=['env', 'venv'], noglob=False):
 @task(
     help={
         'out': 'Where to store the file',
+        'current': 'Package the current state',
     },
 )
-def release(ctx, out='out'):
+def release(ctx, out='out', current=False):
     """Perform release task.
 
     Creates a zip with required files and prefix Materializer. Github auto packing includes the version
     number in the prefix.
     """
 
-    command = 'git archive {tag} --prefix Materializer/ --format=zip --output {out}/Materializer-{tag}.zip'.format(
-        tag=VERSION, out=out)
+    tag = VERSION
+    file_version = VERSION
 
-    print("Running command: '" + command + "'")
+    if current:
+        reflog = check_output(['git', 'symbolic-ref', '--short', 'HEAD']).strip()
+        sha = check_output(['git', 'rev-parse', '--short', 'HEAD']).strip()
+        # print "Reflog: {reflog}".format(reflog=reflog)
+        # print "Sha: {sha}".format(sha=sha)
+        tag = 'HEAD'
+        file_version = "{branchref}~{sha}".format(branchref=reflog.replace('/', '_'), sha=sha)
+
+    outfile = '{out}{sep}Materializer-{file_version}.zip'.format(out=out, sep=os.path.sep, file_version=file_version)
+    command = ['git', 'archive', '-v', tag,
+               '--prefix', 'Materializer{sep}'.format(sep=os.path.sep),
+               '--format', 'zip',
+               '--output', outfile]
+
+    # print("Running command: ['" + "', '".join(command) + "']")
     if not os.path.isdir(out):
         os.mkdir('out')
 
-    os.system(command)
+    print "Packaging ..."
+    ctx.run(' '.join(command), err_stream=sys.stdout)
+    print "Output: {outfile}".format(outfile=outfile)

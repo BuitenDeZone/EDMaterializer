@@ -141,14 +141,20 @@ def create_plugin_prefs(parent, defaults, filters):
 def create_options_prefs(parent):
     """Create a new options frame."""
 
-    frame = tk.LabelFrame(parent, text="General Options")
+    wrap_frame = tk.Frame(parent)
+    wrap_frame.configure(padx=5, pady=5)
+    wrap_frame.grid(sticky=tk.N+tk.E+tk.W)
+
+    frame = tk.LabelFrame(wrap_frame, text="General Options")
+    frame.configure(padx=5, pady=5)
+
     lbl = tk.Label(
         frame, wrap=200, justify=tk.LEFT,
         text="You can reset to defaults by clearing an entry and (dis)/enable it (again)."
     )
     lbl.grid()
     frame.grid()
-    return frame
+    return wrap_frame
 
 
 def check_material_matches(materials, filters):

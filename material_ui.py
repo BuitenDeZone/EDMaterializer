@@ -50,12 +50,16 @@ class MaterialFilterConfigFrame(tk.Frame):
 
         # Load all
         for alert in self.materialFilterList:
+            threshold = Locale.stringFromNumber(alert.threshold, 2)
             if alert.enabled:
                 self.materialWidgets[alert.material][0].set(alert.material.materialId)
+                self.materialWidgets[alert.material][1].delete(0, tk.END)
+                self.materialWidgets[alert.material][1].insert(0, threshold)
             else:
                 self.materialWidgets[alert.material][0].set(0)
-            self.materialWidgets[alert.material][1].delete(0, tk.END)
-            self.materialWidgets[alert.material][1].insert(0, Locale.stringFromNumber(alert.threshold, 2))
+                self.materialWidgets[alert.material][1].delete(0, tk.END)
+                if not threshold == '0.00':
+                    self.materialWidgets[alert.material][1].insert(0, threshold)
 
     def get_material_filters(self):
         """

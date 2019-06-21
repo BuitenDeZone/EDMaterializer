@@ -9,21 +9,21 @@ from l10n import Locale
 from theme import theme
 
 # Own materializer stuff
-from material_api import MaterialAlert, Materials, Rarities
+from material_api import MaterialFilter, Materials, Rarities
 
 
 class MaterialAlertsListPreferencesFrame(tk.Frame):
     """Creates a frame to manage the Material Alert List."""
 
-    def __init__(self, master, default_thresholds, material_alerts_list=None, **kw):
+    def __init__(self, master, default_thresholds, material_filter_list=None, **kw):
         """Create a new Frame."""
 
         tk.Frame.__init__(self, master, **kw)
 
-        if material_alerts_list is None:
-            material_alerts_list = []
+        if material_filter_list is None:
+            material_filter_list = []
 
-        self.materialAlertsList = material_alerts_list
+        self.materialFilterList = material_filter_list
         self.materialWidgets = dict()
         self.defaultThresholds = default_thresholds
         self.create_widgets()
@@ -38,7 +38,7 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
             widgets[1].delete(0, tk.END)
 
         # Load all
-        for alert in self.materialAlertsList:
+        for alert in self.materialFilterList:
             if alert.enabled:
                 self.materialWidgets[alert.material][0].set(alert.material.materialId)
             else:
@@ -221,10 +221,10 @@ class MaterialAlertListSettings(object):
     @classmethod
     def translate_from_settings(cls, materials):
         """
-        Read a list with Symbol>=Threshold and parse it into proper MaterialAlert objects.
+        Read a list with Symbol>=Threshold and parse it into proper MaterialFilter objects.
 
         :param materials: list with material and threshold.
-        :return: list of MaterialAlert objects.
+        :return: list of MaterialFilter objects.
         """
         if materials is None:
             return list()
@@ -244,7 +244,7 @@ class MaterialAlertListSettings(object):
                     threshold = (threshold * -1) - 100
                     enabled = False
 
-                alert = MaterialAlert(material, round(threshold, 2), enabled)
+                alert = MaterialFilter(material, round(threshold, 2), enabled)
                 alerts.append(alert)
 
         return alerts
@@ -252,11 +252,11 @@ class MaterialAlertListSettings(object):
     @classmethod
     def translate_to_settings(cls, alerts, clean=False):
         """
-        Convert a list of MaterialAlerts into a string only list to store in settings.
+        Convert a list of `MaterialFilter`s into a string only list to store in settings.
 
-        :param alerts: list of MaterialAlert objects.
+        :param alerts: list of MaterialFilter objects.
         :param clean: Omit disabled filters in the output
-        :return: list of string representations of MaterialAlerts.
+        :return: list of string representations of `MaterialFilter`s.
         """
 
         result = []

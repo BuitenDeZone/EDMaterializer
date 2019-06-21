@@ -162,7 +162,7 @@ def check_material_matches(materials, filters):
     Checks each filter against the provided materials and returns matches.
 
     :param materials: List of materials: array of [{"Name": <value>, "Percent": <value>}, ...]
-    :param filters: List of `MaterialAlert`s
+    :param filters: List of `MaterialFilter`s
     :return: list of `MaterialMatch`es
     """
 

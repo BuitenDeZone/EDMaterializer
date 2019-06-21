@@ -21,9 +21,9 @@ VALUE_EVENT_SCAN = "Scan"
 VALUE_SCAN_TYPE_DETAILED = "Detailed"
 
 
-class MaterialAlert(object):
+class MaterialFilter(object):
     """
-    Represents a alert on a certain material based on a threshold.
+    Represents a filter on a certain material based on a threshold.
     """
 
     def __init__(self, material, threshold, enabled=True):
@@ -38,7 +38,7 @@ class MaterialAlert(object):
         return "{m} >= {v} (disabled)".format(m=self.material.name, v=self.threshold)
 
     def __eq__(self, other):
-        if not isinstance(other, MaterialAlert):
+        if not isinstance(other, MaterialFilter):
             # don't attempt to compare against unrelated types
             return NotImplemented
 

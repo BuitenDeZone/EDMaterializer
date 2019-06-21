@@ -6,7 +6,7 @@ import sys
 import Tkinter as tk
 from pprint import pprint
 
-from material_ui import MaterialAlertListSettings
+from material_ui import MaterialFilterListConfigTranslator
 from load import DEFAULT_THRESHOLDS, create_plugin_prefs, create_options_prefs
 
 
@@ -40,7 +40,7 @@ class Application(tk.Frame):
 
         try:
             print "Bye!"
-            pprint(MaterialAlertListSettings.translate_to_settings(self.prefsFrame.get_material_filters()))
+            pprint(MaterialFilterListConfigTranslator.translate_to_settings(self.prefsFrame.get_material_filters()))
         finally:
             self.master.destroy()
 
@@ -74,7 +74,7 @@ TESTLIST = ['Sb>=-100.00',
             'Pb>=-100.00',
             'B>=-100.00']
 
-TESTSETTINGS = MaterialAlertListSettings.translate_from_settings(TESTLIST)
+TESTSETTINGS = MaterialFilterListConfigTranslator.translate_from_settings(TESTLIST)
 # print "From test settings:"
 # for filter in TESTSETTINGS:
 #     pprint(filter.__str__())

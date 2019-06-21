@@ -1,6 +1,4 @@
-"""
-Plugin to help with finding planets with the materials you need while exploring.
-"""
+"""Plugin to help with finding planets with the materials you need while exploring."""
 
 import sys
 import Tkinter as tk
@@ -13,7 +11,7 @@ import myNotebook as nb
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
 from material_api import Materials
-from material_ui import MaterialAlertsListPreferencesFrame, MaterialAlertListSettings, MaterialAlertListFrame
+from material_ui import MaterialFilterConfigFrame, MaterialFilterListConfigTranslator, MaterialFilterMatchesFrame
 from version import VERSION
 
 this = sys.modules[__name__]  # For holding module globals
@@ -75,7 +73,7 @@ def prefs_changed(_cmdr, _is_beta):
     Called when the preferences ED:MC dialog is closed: Save settings.
     """
     this.materialAlertFilters = this.materialAlertListSettingsEditor.get_material_filters()
-    config.set('material_filters', MaterialAlertListSettings.translate_to_settings(this.materialAlertFilters))
+    config.set('material_filters', MaterialFilterListConfigTranslator.translate_to_settings(this.materialAlertFilters))
 
 
 def plugin_start(_plugin_dir):
@@ -86,7 +84,7 @@ def plugin_start(_plugin_dir):
     raw_material_filters = [x for x in config.get('material_filters') if x]
 
     # Load known filters
-    this.materialAlertFilters = MaterialAlertListSettings.translate_from_settings(raw_material_filters)
+    this.materialAlertFilters = MaterialFilterListConfigTranslator.translate_from_settings(raw_material_filters)
     print 'Plugin Materializer (version: {}) started...'.format(VERSION)
     return 'Materializer'
 
@@ -98,12 +96,7 @@ def plugin_app(parent):
     frames from plugins. It is lazy loaded later on.
     """
 
-    this.materialAlertsFrame = MaterialAlertListFrame(parent)
-    # parent.after(1000, add_test_matches_1)
-    # parent.after(3000, add_test_matches_2)
-    # parent.after(5000, add_test_matches_3)
-    # parent.after(8000, clear_test_matches)
-    # parent.after(10000, add_test_matches_3)
+    this.materialAlertsFrame = MaterialFilterMatchesFrame(parent)
     return this.materialAlertsFrame
 
 
@@ -135,7 +128,7 @@ def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
 def create_plugin_prefs(parent, defaults, filters):
     """Creates a new MaterialAlertsListPreferenceFrame."""
 
-    return MaterialAlertsListPreferencesFrame(parent, defaults, filters)
+    return MaterialFilterConfigFrame(parent, defaults, filters)
 
 
 def create_options_prefs(parent):
@@ -162,7 +155,7 @@ def check_material_matches(materials, filters):
     Checks each filter against the provided materials and returns matches.
 
     :param materials: List of materials: array of [{"Name": <value>, "Percent": <value>}, ...]
-    :param filters: List of `MaterialAlert`s
+    :param filters: List of `MaterialFilter`s
     :return: list of `MaterialMatch`es
     """
 

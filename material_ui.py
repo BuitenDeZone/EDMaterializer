@@ -9,25 +9,36 @@ from l10n import Locale
 from theme import theme
 
 # Own materializer stuff
-from material_api import MaterialAlert, Materials, Rarities
+from material_api import MaterialFilter, Materials, Rarities
 
 
-class MaterialAlertsListPreferencesFrame(tk.Frame):
+class MaterialFilterConfigFrame(tk.Frame):
     """Creates a frame to manage the Material Alert List."""
 
-    def __init__(self, master, default_thresholds, material_alerts_list=None, **kw):
+    def __init__(self, master, default_thresholds, material_filter_list=None, **kw):
         """Create a new Frame."""
 
         tk.Frame.__init__(self, master, **kw)
 
-        if material_alerts_list is None:
-            material_alerts_list = []
+        if material_filter_list is None:
+            material_filter_list = []
 
-        self.materialAlertsList = material_alerts_list
+        self.materialFilterList = material_filter_list
         self.materialWidgets = dict()
         self.defaultThresholds = default_thresholds
         self.create_widgets()
         self.update_alerts()
+
+    def create_widgets(self):
+        """Create all the different frames for each known `Rarity`."""
+
+        self._create_rarity_frame(self, Rarities.VERY_COMMON, column=0, row=0)
+        self._create_rarity_frame(self, Rarities.COMMON, column=1, row=0)
+        self._create_rarity_frame(self, Rarities.RARE, column=0, row=1)
+        self._create_rarity_frame(self, Rarities.VERY_RARE, column=1, row=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid()
 
     def update_alerts(self):
         """Update the UI with the current configured `MaterialFilter`s."""
@@ -38,7 +49,7 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
             widgets[1].delete(0, tk.END)
 
         # Load all
-        for alert in self.materialAlertsList:
+        for alert in self.materialFilterList:
             if alert.enabled:
                 self.materialWidgets[alert.material][0].set(alert.material.materialId)
             else:
@@ -46,8 +57,23 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
             self.materialWidgets[alert.material][1].delete(0, tk.END)
             self.materialWidgets[alert.material][1].insert(0, Locale.stringFromNumber(alert.threshold, 2))
 
+    def get_material_filters(self):
+        """
+        Convert the settings made in the UI in a list of `MaterialFilter`s.
+
+        :return: list of MaterialFilter`s
+        """
+
+        material_filters = []
+        for material, widgets in self.materialWidgets.items():
+            enabled = True if widgets[0].get() > 0 else False
+            entry_value = widgets[1].get() if widgets[1].get() else '0.0'
+            threshold = round(Locale.numberFromString(entry_value) * 100) / 100.0
+            material_filters.append(MaterialFilter(material, threshold, enabled))
+        return material_filters
+
     # bound methods documentation is kinda lacking. I hacked around.
-    def material_selectbox_event(self, _event=None):
+    def _material_selectbox_event(self, _event=None):
         """
         Perform updates when a selectbox's selection changes.
 
@@ -61,32 +87,6 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
             if checkbox_val > 0 and entry_value.strip() == "":
                 widgets[1].delete(0, tk.END)
                 widgets[1].insert(0, Locale.stringFromNumber(self.defaultThresholds.get(material, 0.0), 2))
-
-    def create_widgets(self):
-        """Create all the different frames for each known `Rarity`."""
-
-        self._create_rarity_frame(self, Rarities.VERY_COMMON, column=0, row=0)
-        self._create_rarity_frame(self, Rarities.COMMON, column=1, row=0)
-        self._create_rarity_frame(self, Rarities.RARE, column=0, row=1)
-        self._create_rarity_frame(self, Rarities.VERY_RARE, column=1, row=1)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid()
-
-    def get_material_filters(self):
-        """
-        Convert the settings made in the UI in a list of `MaterialAlert`s.
-
-        :return: list of MaterialAlert`s
-        """
-
-        material_filters = []
-        for material, widgets in self.materialWidgets.items():
-            enabled = True if widgets[0].get() > 0 else False
-            entry_value = widgets[1].get() if widgets[1].get() else '0.0'
-            threshold = round(Locale.numberFromString(entry_value) * 100) / 100.0
-            material_filters.append(MaterialAlert(material, threshold, enabled))
-        return material_filters
 
     def _create_rarity_frame(self, parent, rarity, **gridopts):
         """
@@ -117,7 +117,7 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
                 variable=check_var,
                 onvalue=material.materialId,
                 offvalue=0,
-                command=self.material_selectbox_event,
+                command=self._material_selectbox_event,
             )
             checkbox.grid(column=0, row=index, sticky=tk.W)
 
@@ -134,7 +134,7 @@ class MaterialAlertsListPreferencesFrame(tk.Frame):
         materials_frame.pack(fill=tk.BOTH)
 
 
-class MaterialAlertListFrame(tk.Frame):
+class MaterialFilterMatchesFrame(tk.Frame):
     """A tk frame which displays matching material alerts."""
 
     def __init__(self, master, **kw):
@@ -215,16 +215,16 @@ class MaterialAlertListFrame(tk.Frame):
         self.containerFrame.grid()
 
 
-class MaterialAlertListSettings(object):
+class MaterialFilterListConfigTranslator(object):
     """Helper class to translate from settings to a list with material alerts."""
 
     @classmethod
     def translate_from_settings(cls, materials):
         """
-        Read a list with Symbol>=Threshold and parse it into proper MaterialAlert objects.
+        Read a list with Symbol>=Threshold and parse it into proper MaterialFilter objects.
 
         :param materials: list with material and threshold.
-        :return: list of MaterialAlert objects.
+        :return: list of MaterialFilter objects.
         """
         if materials is None:
             return list()
@@ -244,7 +244,7 @@ class MaterialAlertListSettings(object):
                     threshold = (threshold * -1) - 100
                     enabled = False
 
-                alert = MaterialAlert(material, round(threshold, 2), enabled)
+                alert = MaterialFilter(material, round(threshold, 2), enabled)
                 alerts.append(alert)
 
         return alerts
@@ -252,11 +252,11 @@ class MaterialAlertListSettings(object):
     @classmethod
     def translate_to_settings(cls, alerts, clean=False):
         """
-        Convert a list of MaterialAlerts into a string only list to store in settings.
+        Convert a list of `MaterialFilter`s into a string only list to store in settings.
 
-        :param alerts: list of MaterialAlert objects.
+        :param alerts: list of MaterialFilter objects.
         :param clean: Omit disabled filters in the output
-        :return: list of string representations of MaterialAlerts.
+        :return: list of string representations of `MaterialFilter`s.
         """
 
         result = []

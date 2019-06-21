@@ -6,6 +6,7 @@
 .gitignore export-ignore
 .pylintrc export-ignore
 legacy.py export-ignore
+tasks.py export-ignore
 test.py export-ignore
 test_*.py export-ignore
 requirements.txt export-ignore

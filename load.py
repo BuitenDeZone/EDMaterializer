@@ -14,9 +14,8 @@ from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MAT
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
 from material_api import Materials
 from material_ui import MaterialAlertsListPreferencesFrame, MaterialAlertListSettings, MaterialAlertListFrame
+from version import VERSION
 
-
-VERSION = '0.1'
 this = sys.modules[__name__]  # For holding module globals
 
 
@@ -88,6 +87,7 @@ def plugin_start(_plugin_dir):
 
     # Load known filters
     this.materialAlertFilters = MaterialAlertListSettings.translate_from_settings(raw_material_filters)
+    print 'Plugin Materializer (version: {}) started...'.format(VERSION)
     return 'Materializer'
 
 

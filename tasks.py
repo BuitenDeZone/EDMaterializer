@@ -3,6 +3,7 @@
 from invoke import task
 import glob
 import os
+from version import VERSION
 
 @task(
     aliases=["flake8", "pep8"],
@@ -13,7 +14,13 @@ import os
     },
 )
 def lint(ctx, filename=None, envdir=['env', 'venv'], noglob=False):
-    """Run flake8 python linter."""
+    """Run flake8 python linter.
+
+    :param ctx: Invoke context
+    :param filename: A filename to check.
+    :param envdir: python environment dirs. We exclude these
+    :param noglob: Disable globbing in the filename.
+    """
 
     excludes = ['.git' ]
     if isinstance(envdir, str):
@@ -36,4 +43,26 @@ def lint(ctx, filename=None, envdir=['env', 'venv'], noglob=False):
         command += ' ' + " ".join(templates)
 
     print("Running command: '" + command + "'")
+    os.system(command)
+
+
+@task(
+    help={
+        'out': 'Where to store the file',
+    },
+)
+def release(ctx, out='out'):
+    """Perform release task.
+
+    Creates a zip with required files and prefix Materializer. Github auto packing includes the version
+    number in the prefix.
+    """
+
+    command = 'git archive {} --prefix Materializer/ --format=zip --output {}/Materializer-{}.zip'.format(
+        VERSION, out, VERSION)
+
+    print("Running command: '" + command + "'")
+    if not os.path.isdir(out):
+        os.mkdir('out')
+
     os.system(command)

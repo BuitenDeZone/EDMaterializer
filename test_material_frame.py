@@ -8,7 +8,7 @@ import Tkinter as tk
 import theme
 
 # Materializer plugin components
-from material_ui import MaterialAlertListFrame
+from material_ui import MaterialFilterMatchesFrame
 from material_ui import MaterialAlertListSettings
 from material_api import MaterialMatch, Materials
 from load import update_alert_frame
@@ -34,7 +34,7 @@ class Application(tk.Frame):
         self.testFrame.config(background="blue")
         self.lblTest = tk.Label(self.testFrame, text="TESTING")
         self.lblTest.grid()
-        self.materialList = MaterialAlertListFrame(self)
+        self.materialList = MaterialFilterMatchesFrame(self)
 
 
 MATCHES = [MaterialMatch(Materials.ARSENIC, 2.3415), MaterialMatch(Materials.IRON, 20.33)]

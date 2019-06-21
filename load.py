@@ -11,7 +11,7 @@ import myNotebook as nb
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
 from material_api import Materials
-from material_ui import MaterialFilterConfigFrame, MaterialAlertListSettings, MaterialAlertListFrame 
+from material_ui import MaterialFilterConfigFrame, MaterialAlertListSettings, MaterialFilterMatchesFrame
 from version import VERSION
 
 this = sys.modules[__name__]  # For holding module globals
@@ -96,7 +96,7 @@ def plugin_app(parent):
     frames from plugins. It is lazy loaded later on.
     """
 
-    this.materialAlertsFrame = MaterialAlertListFrame(parent)
+    this.materialAlertsFrame = MaterialFilterMatchesFrame(parent)
     # parent.after(1000, add_test_matches_1)
     # parent.after(3000, add_test_matches_2)
     # parent.after(5000, add_test_matches_3)

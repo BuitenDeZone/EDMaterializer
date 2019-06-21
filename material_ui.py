@@ -134,7 +134,7 @@ class MaterialFilterConfigFrame(tk.Frame):
         materials_frame.pack(fill=tk.BOTH)
 
 
-class MaterialAlertListFrame(tk.Frame):
+class MaterialFilterMatchesFrame(tk.Frame):
     """A tk frame which displays matching material alerts."""
 
     def __init__(self, master, **kw):

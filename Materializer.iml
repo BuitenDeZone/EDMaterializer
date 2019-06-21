@@ -5,8 +5,8 @@
       <excludeFolder url="file://$MODULE_DIR$/env" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <content url="file://$USER_HOME$/Sources/EDMarketConnector" />
     <orderEntry type="jdk" jdkName="Python 2.7 (Materializer)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="EDMarketConnector" />
   </component>
 </module>

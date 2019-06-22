@@ -8,14 +8,17 @@ from config import config
 import myNotebook as nb
 
 # Own materializer stuff
+from material_api import LOGGER, LOG_INFO, LOG_DEBUG
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
 from material_api import Materials
 from material_ui import MaterialFilterConfigFrame, MaterialFilterListConfigTranslator, MaterialFilterMatchesFrame
 from version import VERSION
 
+
 this = sys.modules[__name__]  # For holding module globals
 
+# this.logLevel = LOG_DEBUG
 
 # Based on https://tinyurl.com/mexgpnb
 DEFAULT_THRESHOLDS = {
@@ -92,7 +95,7 @@ def plugin_start(_plugin_dir):
     raw_material_filters = [x for x in material_filters_config if x]
     # Load known filters
     this.materialFilters = MaterialFilterListConfigTranslator.translate_from_settings(raw_material_filters)
-    print 'Plugin Materializer (version: {version}) started...'.format(version=VERSION)
+    LOGGER.log(this, LOG_INFO, 'Plugin Materializer (version: {version}) enabled...'.format(version=VERSION))
     return 'Materializer'
 
 

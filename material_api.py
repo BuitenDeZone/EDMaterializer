@@ -1,6 +1,22 @@
 """Helpers/Object Model for the Materializer plugin."""
 
+from __future__ import print_function
 import inspect
+
+
+LOG_ERROR = 2
+LOG_WARN = 3
+LOG_INFO = 4
+LOG_DEBUG = 5
+
+LOG_OUTPUT = {
+    1: "CRITICAL",
+    2: "ERROR",
+    3: "WARNING",
+    4: "INFO",
+    5: "DEBUG",
+    0: "UNKNOWN",
+}
 
 FIELD_NAME = "Name"
 FIELD_PERCENT = "Percent"
@@ -17,6 +33,44 @@ VALUE_EVENT_FSS_DISCOVERY_SCAN = "FSSDiscoveryScan"
 VALUE_EVENT_FSDJUMP = "FSDJump"
 VALUE_EVENT_SCAN = "Scan"
 VALUE_SCAN_TYPE_DETAILED = "Detailed"
+
+
+class Logger(object):
+    """Represent a logger."""
+
+    def __init__(self, log_level=LOG_INFO, log_prefix=''):
+        """Initialize the logger."""
+
+        self.logLevel = log_level
+        self.logPrefix = log_prefix
+
+    def log(self, caller, level, message):
+        """Log a message for a caller."""
+
+        log_level = self.logLevel
+        log_prefix = self.logPrefix
+        if hasattr(caller, 'logLevel') and caller.logLevel is not None:
+            log_level = caller.logLevel
+        if hasattr(caller, 'logPrefix'):
+            log_prefix = caller.logPrefix
+
+        if isinstance(level, str):
+            from_output = 0
+            print_level = level
+            for key, value in LOG_OUTPUT.items():
+                if level.upper() == value:
+                    from_output = key
+                    print_level = LOG_OUTPUT.get(from_output)
+
+            level = from_output
+        else:
+            print_level = LOG_OUTPUT.get(level, 'UNKNOWN')
+
+        if level <= log_level:
+            print("{prefix}{level}: {message}".format(prefix=log_prefix, level=print_level, message=message))
+
+
+LOGGER = Logger()
 
 
 class MaterialFilter(object):

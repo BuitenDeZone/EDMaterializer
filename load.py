@@ -86,9 +86,10 @@ def plugin_start(_plugin_dir):
     this.currentSystem = None
     material_filters_config = config.get('material_filters')
     if material_filters_config is None:
-        material_filter_config = []
+        material_filters_config = []
 
-    raw_material_filters = [x for x in material_filter_config if x]
+    # Get from config and trim out empty values
+    raw_material_filters = [x for x in material_filters_config if x]
     # Load known filters
     this.materialFilters = MaterialFilterListConfigTranslator.translate_from_settings(raw_material_filters)
     print 'Plugin Materializer (version: {version}) started...'.format(version=VERSION)

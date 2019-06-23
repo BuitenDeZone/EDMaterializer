@@ -1,6 +1,7 @@
 """This is a small app that does nothing to test the materials frame."""
 
 import Tkinter as tk
+from pprint import pformat
 
 # EDMC Theming
 import theme
@@ -9,7 +10,7 @@ import theme
 from material_ui import MaterialFilterMatchesFrame
 from material_ui import MaterialFilterListConfigTranslator
 from material_api import MaterialMatch, Materials
-from load import update_matches_frame
+from material_api import LOGGER, LOG_DEBUG
 
 
 class Application(tk.Frame):
@@ -40,22 +41,22 @@ MATCHES = [MaterialMatch(Materials.ARSENIC, 2.3415), MaterialMatch(Materials.IRO
 
 def add_matches_1():
     """Add test matches."""
-    APP.materialList.add_matches("1", MATCHES)
+    APP.materialList._add_matches("1", MATCHES)  # pylint: disable=protected-access
 
 
 def add_matches_2():
     """Add test matches."""
-    APP.materialList.add_matches("4 b", MATCHES)
+    APP.materialList._add_matches("4 b", MATCHES)  # pylint: disable=protected-access
 
 
 def add_matches_3():
     """Add test matches."""
-    APP.materialList.add_matches("2 b", MATCHES)
+    APP.materialList._add_matches("2 b", MATCHES)  # pylint: disable=protected-access
 
 
 def add_matches_4():
     """Add test matches."""
-    APP.materialList.add_matches("2", MATCHES)
+    APP.materialList._add_matches("2", MATCHES)  # pylint: disable=protected-access
 
 
 TEST_SYSTEM = "Irk"
@@ -66,9 +67,6 @@ TEST_MATERIAL_COMMON_2 = Materials.ARSENIC
 TEST_MATERIAL_RARE = Materials.CADMIUM
 TEST_MATERIAL_VERY_RARE = Materials.POLONIUM
 
-RULES = {
-    "C>=10.00", "As>=0.00",
-}
 
 TEST_SETS = {
     'Irk 1': [
@@ -131,6 +129,11 @@ TEST_SETS = {
     ],
 }
 
+RULES = {
+    "{symbol}>={threshold}".format(symbol=TEST_MATERIAL_VERY_COMMON_1.symbol, threshold="5.00"),
+    "{symbol}>={threshold}".format(symbol=TEST_MATERIAL_COMMON_2.symbol, threshold="0.00"),
+}
+
 TEST_FILTERS = MaterialFilterListConfigTranslator.translate_from_settings(RULES)
 
 
@@ -138,13 +141,49 @@ def update_materials():
     """Add test data through update_matches_frame."""
 
     for planet, materials in TEST_SETS.items():
-        update_matches_frame(APP.materialList, TEST_SYSTEM, planet, materials, TEST_FILTERS)
+        LOGGER.debug(None, "Going through test set {planet}".format(planet=planet))
+        APP.materialList.process_filter_planet_materials(TEST_SYSTEM, planet, materials)
 
+
+def update_materials_hash():
+    """Update materials by sending through a hash."""
+
+    materials = {
+        TEST_MATERIAL_COMMON_2.name: 12.0,
+    }
+    APP.materialList.process_filter_planet_materials(TEST_SYSTEM, 'Irk 5', materials)
+
+
+def update_filters():
+    """Configure the test filters."""
+
+    LOGGER.debug(None, "Update filters")
+    APP.materialList.update_filters(TEST_FILTERS)
+
+
+def clear_system():
+    """Jump to system None."""
+
+    APP.materialList.jump_system(None)
+
+
+LOGGER.logLevel = LOG_DEBUG
 
 ROOT = tk.Tk()
 APP = Application(master=ROOT)
-APP.after(1000, update_materials)
+
+# Basic ui tests:
+# APP.after(1000, add_matches_1)
 # APP.after(2000, add_matches_2)
 # APP.after(3000, add_matches_3)
 # APP.after(4000, add_matches_4)
+
+# Dynamic Filter updates:
+APP.after(1000, update_filters)
+APP.after(2000, update_materials)
+# Clear system
+APP.after(5000, clear_system)
+# Parse materials by hash
+APP.after(6000, update_materials_hash)
+
 APP.mainloop()

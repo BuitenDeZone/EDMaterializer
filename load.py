@@ -19,6 +19,8 @@ from version import VERSION
 this = sys.modules[__name__]  # For holding module globals
 
 # this.logLevel = LOG_DEBUG
+# LOGGER.logLevel = LOG_DEBUG
+this.logPrefix = "Materializer Plugin > "
 
 # Based on https://tinyurl.com/mexgpnb
 DEFAULT_THRESHOLDS = {
@@ -77,6 +79,7 @@ def prefs_changed(_cmdr, _is_beta):
     """
 
     this.materialFilters = this.materialFiltersPreferences.get_material_filters()
+    this.materialMatchesFrame.update_filters(this.materialFilters)
     config.set('material_filters', MaterialFilterListConfigTranslator.translate_to_settings(this.materialFilters))
 
 
@@ -86,7 +89,11 @@ def plugin_start(_plugin_dir):
     Called by EDMC on plugin start.
     """
 
-    this.currentSystem = None
+    #                ,---.o                             o
+    # ,---.,---.,---.|__. .,---.    ,---.,---.,---.,---..,---.,---.
+    # |    |   ||   ||    ||   |    |   |,---||    `---.||   ||   |
+    # `---'`---'`   '`    ``---|    |---'`---^`    `---'``   '`---|
+    #                      `---'    |                         `---'
     material_filters_config = config.get('material_filters')
     if material_filters_config is None:
         material_filters_config = []
@@ -96,6 +103,9 @@ def plugin_start(_plugin_dir):
     # Load known filters
     this.materialFilters = MaterialFilterListConfigTranslator.translate_from_settings(raw_material_filters)
     LOGGER.log(this, LOG_INFO, 'Plugin Materializer (version: {version}) enabled...'.format(version=VERSION))
+    for f in this.materialFilters:
+        LOGGER.debug(this, '  Filter used: {filter}'.format(filter=f.__str__()))
+
     return 'Materializer'
 
 
@@ -107,7 +117,7 @@ def plugin_app(parent):
     frames from plugins. It is lazy loaded later on.
     """
 
-    this.materialMatchesFrame = MaterialFilterMatchesFrame(parent)
+    this.materialMatchesFrame = MaterialFilterMatchesFrame(parent, this.materialFilters)
     return this.materialMatchesFrame
 
 
@@ -115,21 +125,26 @@ def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
     """Handle the events."""
 
     if entry[FIELD_EVENT] == VALUE_EVENT_FSDJUMP:
-        this.materialMatchesFrame.clear_matches()
+        this.materialMatchesFrame.jump_system(system)
 
     elif entry[FIELD_EVENT] == VALUE_EVENT_SCAN \
             and entry[FIELD_SCAN_TYPE] == VALUE_SCAN_TYPE_DETAILED \
             and FIELD_LANDABLE in entry \
             and entry[FIELD_LANDABLE] is True:
 
-        update_matches_frame(
-            this.materialMatchesFrame,
+        this.materialMatchesFrame.process_filter_planet_materials(
             system,
             str(entry[FIELD_BODY_NAME]),
             entry[FIELD_MATERIALS],
-            this.materialFilters,
+            True,  # With priority. If we are scanning this system, we are on this system!
         )
 
+
+# |         |
+# |---.,---.|    ,---.,---.,---.,---.
+# |   ||---'|    |   ||---'|    `---.
+# `   '`---'`---'|---'`---'`    `---'
+#                |
 
 def create_material_filter_prefs(parent, defaults, filters):
     """Create a new MaterialFilterConfigFrame."""
@@ -158,31 +173,3 @@ def create_options_prefs(parent):
     frame.grid()
     return wrap_frame
 
-
-def check_material_matches(materials, filters):
-    """
-    Check each filter against the provided materials and returns matches.
-
-    :param materials: List of materials: array of [{"Name": <value>, "Percent": <value>}, ...]
-    :param filters: List of `MaterialFilter`s
-    :return: list of `MaterialMatch`es
-    """
-
-    return [m for m in [f.check_matches(materials) for f in filters] if m is not None]
-
-
-def update_matches_frame(filter_match_frame, system, planet, materials, filters):
-    """
-    Update the result frame by getting the matches on a scan event.
-
-    :param filter_match_frame: Frame with filter matches
-    :param system: Current system name: Used to create the planet 'short' name
-    :param planet: Name of the planet
-    :param materials: List of found materials
-    :param filters: Filters to check against
-    """
-
-    matches = check_material_matches(materials, filters)
-    if matches:
-        planet_name = planet.replace(system, '')
-        filter_match_frame.add_matches(planet_name, matches)

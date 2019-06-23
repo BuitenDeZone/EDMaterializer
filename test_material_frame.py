@@ -1,6 +1,8 @@
 """This is a small app that does nothing to test the materials frame."""
 
 import Tkinter as tk
+import os
+import json
 from pprint import pformat
 
 # EDMC Theming
@@ -167,6 +169,28 @@ def clear_system():
     APP.materialList.jump_system(None)
 
 
+def scan_edsm_bodies_for_matches(system, bodies):
+    """Scan materials to the material matches frame."""
+
+    for body in bodies:
+        LOGGER.info(APP, "BODY: {name} -> {dump}".format(name=body["name"], dump=pformat(body)))
+        planet = body["name"]
+        materials = body.get("materials", None)
+        APP.materialList.process_filter_planet_materials(system, planet, materials)
+
+
+def update_by_json():
+    """Simulate an update by receiving a edsm result."""
+    clear_system()
+
+    if JSON_RESPONSE.get('bodies', None):
+        scan_edsm_bodies_for_matches(JSON_RESPONSE['name'], JSON_RESPONSE['bodies'])
+
+
+with open(os.path.sep.join(['fixtures', 'edsm-system-body-sol.json']), 'r') as f:
+    JSON_RESPONSE = json.load(f)
+
+
 LOGGER.logLevel = LOG_DEBUG
 
 ROOT = tk.Tk()
@@ -185,5 +209,6 @@ APP.after(2000, update_materials)
 APP.after(5000, clear_system)
 # Parse materials by hash
 APP.after(6000, update_materials_hash)
+APP.after(8000, update_by_json)
 
 APP.mainloop()

@@ -160,6 +160,62 @@ def journal_entry(_cmdr, _is_beta, system, _station, entry, _state):
         )
 
 
+#      |              o                   |    |    |              |
+# ,---.|    .   .,---..,---.    ,---.,---.|    |    |---.,---.,---.|__/ ,---.
+# |   ||    |   ||   |||   |    |    ,---||    |    |   |,---||    |  \ `---.
+# |---'`---'`---'`---|``   '    `---'`---^`---'`---'`---'`---^`---'`   ``---'
+# |              `---'
+
+# This only gets us events from the edsm plugin
+def edsm_notify_system(reply):
+    """
+    Handle an event sent by EDMarketConnector/plugins/edsm.
+
+    When an existing system is encountered, trigger an update from EDSM.
+    :param reply:
+    """
+    LOGGER.log(this, LOG_DEBUG, "Processing edsm notify event: {event}".format(event=pformat(reply)))
+    if not reply:
+        return
+    elif reply['msgnum'] // 100 not in (1, 4):
+        return
+    elif reply.get('systemCreated'):
+        return
+    elif this.lastEDSMScan == monitor.system:
+        return
+    else:
+        current_system = monitor.system
+        this.edsmQueries.request_get(
+            EDSM_QUERIES.API_SYSTEM_V1,
+            'bodies',
+            systemName=current_system,
+        )
+
+
+# Handles EDSM responses. We only care about api-system-v1/bodies.
+def edsm_querier_response_api_system_v1_bodies(request, response):
+    """Parse an edsm querier response for the api-system-v1  / bodies call."""
+
+    (_api, _endpoint, _method, _params) = request
+    if response:
+        system = response['name']
+        this.currentState = {
+            "system": system,
+            "body_count": response['bodyCount'],
+            "scanned": len(response['bodies']),
+        }
+
+        this.lastEDSMScan = system
+        bodies = response.get('bodies', None)
+        if bodies:
+            for body in bodies:
+                # LOGGER.debug(this, "BODY: {name} -> {dump}".format(name=body["name"], dump=pformat(body)))
+                planet = body["name"]
+                materials = body.get("materials", None)
+                this.materialMatchesFrame.process_filter_planet_materials(system, planet, materials)
+    return True
+
+
 # |         |
 # |---.,---.|    ,---.,---.,---.,---.
 # |   ||---'|    |   ||---'|    `---.

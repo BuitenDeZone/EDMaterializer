@@ -3,6 +3,7 @@
 from __future__ import print_function
 import inspect
 import Tkinter as tk
+from pprint import pformat
 
 # EDMC components
 from l10n import Locale
@@ -139,12 +140,37 @@ class MaterialFilter(object):
         :param materials: list of material dicts with a Name and Percent field.
         :return: returns a MaterialMatch or an empty list.
         """
-        if self.enabled:
-            for material_raw in materials:
-                material = Materials.by_name(material_raw[FIELD_NAME])
-                percent = material_raw[FIELD_PERCENT]
-                if self.material == material and percent >= self.threshold:
-                    return MaterialMatch(material, percent)
+        if self.enabled and material_list:
+            for material_item in material_list:
+                percent = -1
+                LOGGER.debug(self, "Material item: {dump}".format(dump=pformat(material_item)))
+                if isinstance(material_item, dict):
+                    material_name = material_item[FIELD_NAME]
+                    percent = material_item[FIELD_PERCENT]
+                else:
+                    material_name = material_item
+                    percent = material_list[material_item]
+
+                material = Materials.by_name(material_name)
+                if material is None:
+                    LOGGER.warn(self, "Unknown material: {material}".format(material=material_name))
+                    continue
+
+                if self.material == material:
+                    LOGGER.debug(self, "Compare {mat} percent {p} ({p_type}) >= {t} ({t_type}) => {result}".format(
+                        mat=material.name,
+                        p=percent,
+                        p_type=type(percent),
+                        t=self.threshold,
+                        t_type=type(self.threshold),
+                        result=str(percent >= self.threshold),
+                    ))
+
+                    if percent >= self.threshold:
+                        LOGGER.debug(self, "Return match")
+                        return MaterialMatch(material, percent)
+
+                    return None
 
         return None
 

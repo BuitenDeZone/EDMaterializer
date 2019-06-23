@@ -44,6 +44,22 @@ class Logger(object):
         self.logLevel = log_level
         self.logPrefix = log_prefix
 
+    def debug(self, caller, message):
+        """Write a debug message for a caller."""
+        self.log(caller, LOG_DEBUG, message)
+
+    def info(self, caller, message):
+        """Write a info message for a caller."""
+        self.log(caller, LOG_INFO, message)
+
+    def warn(self, caller, message):
+        """Write a warn message for a caller."""
+        self.log(caller, LOG_WARN, message)
+
+    def error(self, caller, message):
+        """Write a error message for a caller."""
+        self.log(caller, LOG_ERROR, message)
+
     def log(self, caller, level, message):
         """Log a message for a caller."""
 
@@ -51,7 +67,7 @@ class Logger(object):
         log_prefix = self.logPrefix
         if hasattr(caller, 'logLevel') and caller.logLevel is not None:
             log_level = caller.logLevel
-        if hasattr(caller, 'logPrefix'):
+        if hasattr(caller, 'logPrefix') and caller.logPrefix is not None:
             log_prefix = caller.logPrefix
 
         if isinstance(level, str):

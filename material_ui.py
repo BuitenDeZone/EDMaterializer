@@ -1,15 +1,16 @@
 """Graphical components for the Materializer plugin."""
 
+from pprint import pformat
 import Tkinter as tk
 import tkFont
 
 # EDMC components
-
 from l10n import Locale
 from theme import theme
 
 # Own materializer stuff
 from material_api import MaterialFilter, Materials, Rarities
+from material_api import LOGGER
 
 
 class MaterialFilterConfigFrame(tk.Frame):
@@ -141,13 +142,19 @@ class MaterialFilterConfigFrame(tk.Frame):
 class MaterialFilterMatchesFrame(tk.Frame):
     """A tk frame which displays matching material alerts."""
 
-    def __init__(self, master, **kw):
+    def __init__(self, master, filters=None, **kw):
         """Create a new `Frame` and initialize components."""
 
         tk.Frame.__init__(self, master, **kw)
 
+        self.logPrefix = 'MaterialFilterMatchesFrame > '
+        self.filters = filters
+        if self.filters is None:
+            self.filters = list()
         self.containerFrame = None
         self.planetMatches = dict()
+        self.systemData = dict()
+        self.currentSystem = None
         self.initialize_frame()
         self.grid()
 
@@ -158,20 +165,108 @@ class MaterialFilterMatchesFrame(tk.Frame):
             self.containerFrame = tk.Frame(self)
             self.containerFrame.grid()
 
-    def clear_matches(self):
+    def update_filters(self, filters):
+        """Change the current filter. Re-applies them to the current system data."""
+
+        self.filters = filters
+        self._clear_matches(False)
+        for planet, materials in self.systemData.items():
+            self.process_filter_planet_materials(self.currentSystem, planet, materials)
+
+    def jump_system(self, system, update_ui=True):
+        """Change current system: clear all data."""
+
+        LOGGER.debug(self, "Jump system called: '{system}'".format(system=system))
+        if self.currentSystem == system:
+            LOGGER.debug(self, "Already working on '{system}'. Not resetting.".format(system=system))
+        else:
+            self.systemData = dict()
+            self.currentSystem = system
+            self._clear_matches()
+
+        if update_ui:
+            self._draw_matches()
+
+    def process_filter_planet_materials(self, system, planet, materials, priority=False):
+        """Scan the provided raw materials for matches and updates the UI.
+
+        If the current system is still unknown: use the provided system as current one.
+        If the current system does not match this system but the entry has priority: jump_system.
+        If the current system does not match and there is no priority: skip planet.
+        """
+
+        # current system is still None. Accept any first planet data as the current system.
+        if self.currentSystem is None:
+            self.currentSystem = system  # ui updates are already triggered later
+
+        # current system is not the same
+        if not system == self.currentSystem:
+            if priority:
+                LOGGER.info(self, "Priority override current system '{current_system}' to '{system}'".format(
+                    current_system=self.currentSystem,
+                    system=system,
+                ))
+                self.jump_system(system, False)  # ui updates are already triggered later
+            else:
+                LOGGER.warn(self, "Adding planet data for wrong system. wants: {current_system}, got {system}".format(
+                    current_system=self.currentSystem,
+                    system=system,
+                ))
+                LOGGER.debug(self, "Skipped planet_materials: {planet} system: {system}".format(
+                    planet=planet,
+                    system=system,
+                ))
+                return
+
+        if materials is None:
+            materials = list()
+
+        self.systemData[planet] = materials
+
+        matches = self._check_material_matches(materials)
+        if matches:
+            self._add_matches(planet, matches, priority)
+
+    def _check_material_matches(self, materials):
+        """
+        Check each filter against the provided raw materials and returns matches.
+
+        :param materials: List of materials: array of [{"Name": <value>, "Percent": <value>}, ...]
+        """
+
+        LOGGER.debug(self, "Called _check_material_matches for materials: {materials}".format(
+            materials=pformat(materials),
+        ))
+        matches = []
+        if materials is None or not materials:
+            return matches
+
+        for f in self.filters:
+            LOGGER.debug(self, "Checking filter {filter}".format(filter=f.__str__()))
+            filter_match = f.check_match(materials)
+            if filter_match is not None:
+                LOGGER.debug(self, "Matched {match}".format(match=filter_match.__str__()))
+                matches.append(filter_match)
+        return matches
+        # return [m for m in [f.check_match(materials) for f in self.filters] if m is not None]
+
+    def _clear_matches(self, update_ui=True):
         """Clear the frame with matches."""
 
+        LOGGER.debug(self, "Clear all matches called (update_ui={update_ui}).".format(update_ui=str(update_ui)))
         self.planetMatches = dict()
-        self.draw_matches()
-        self.containerFrame.configure(background=theme.current['background'])
+        if update_ui:
+            self._draw_matches()
+            self.containerFrame.configure(background=theme.current['background'])
 
-    def add_matches(self, planet, matches):
+    def _add_matches(self, planet, matches, priority=False):
         """Add a planet with matches to the frame."""
+        if priority or self.planetMatches.get(planet) is None:
+            self.planetMatches[planet] = matches
 
-        self.planetMatches[planet] = matches
-        self.draw_matches()
+        self._draw_matches()
 
-    def draw_matches(self):
+    def _draw_matches(self):
         """(re-)Generate the frame for all the matches."""
 
         if self.containerFrame is not None:
@@ -184,8 +279,8 @@ class MaterialFilterMatchesFrame(tk.Frame):
         current_row = 0
         for planet in sorted(self.planetMatches):
             matches = self.planetMatches[planet]
-
-            planet_text = "{planet}:".format(planet=planet)
+            planet_name = planet.replace(self.currentSystem, '')
+            planet_text = "{planet}:".format(planet=planet_name)
             label_planet = tk.Label(self.containerFrame, text=planet_text)
             label_planet.configure(
                 foreground=theme.current['foreground'],
@@ -202,17 +297,8 @@ class MaterialFilterMatchesFrame(tk.Frame):
             frame_matches.grid(column=1, row=current_row, sticky=tk.W)
 
             for match in matches:
-                match_text = "{symbol}: {percent}%".format(symbol=match.material.symbol,
-                                                           percent=Locale.stringFromNumber(match.percent, 1))
-                label_color = match.material.rarity.labelColor
-                label_match = tk.Label(frame_matches, text=match_text)
-                label_match.config(
-                    activebackground=label_color, background=label_color,
-                    activeforeground="#ffffff", foreground="#ffffff",
-                    padx=0, pady=1,
-                    borderwidth=1, relief=tk.RIDGE,
-                )
-                label_match.pack(side=tk.LEFT, padx=2, pady=1)
+                match_widget = match.create_widget(frame_matches)
+                match_widget.pack(side=tk.LEFT, padx=2, pady=1)
 
             current_row = current_row + 1
         self.containerFrame.configure(background=theme.current['background'])

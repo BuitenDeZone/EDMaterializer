@@ -2,6 +2,10 @@
 
 from __future__ import print_function
 import inspect
+import Tkinter as tk
+
+# EDMC components
+from l10n import Locale
 
 
 LOG_ERROR = 2
@@ -99,9 +103,11 @@ class MaterialFilter(object):
         :param threshold: Minimum value before we match.
         :param enabled: Enable or disable this rule.
         """
+
         self.material = material
         self.threshold = threshold
         self.enabled = enabled
+        self.logPrefix = "MaterialFilter {str} > ".format(str=self.__str__())
 
     def __str__(self):
         """Return a string representation."""
@@ -126,7 +132,7 @@ class MaterialFilter(object):
 
         return other.material == self.material and other.threshold == self.threshold and other.enabled == self.enabled
 
-    def check_matches(self, materials):
+    def check_match(self, material_list):
         """
         Check if any materials in the list are a match for our threshold.
 
@@ -155,6 +161,21 @@ class MaterialMatch(object):
 
         self.material = material
         self.percent = percent
+
+    def create_widget(self, parent):
+        """Create a widget displaying this match."""
+
+        match_text = "{symbol}: {percent}%".format(symbol=self.material.symbol,
+                                                   percent=Locale.stringFromNumber(self.percent, 1))
+        label_color = self.material.rarity.labelColor
+        label_match = tk.Label(parent, text=match_text)
+        label_match.config(
+            activebackground=label_color, background=label_color,
+            activeforeground="#ffffff", foreground="#ffffff",
+            padx=0, pady=1,
+            borderwidth=1, relief=tk.RIDGE,
+        )
+        return label_match
 
 
 class Rarity(object):

@@ -2,12 +2,16 @@
 
 import sys
 import Tkinter as tk
+from pprint import pformat
 
 # EDMC Components
 from config import config
 import myNotebook as nb
+from monitor import monitor
+import plug
 
 # Own materializer stuff
+from edsm_queries import EDSM_QUERIES
 from material_api import LOGGER, LOG_INFO, LOG_DEBUG
 from material_api import FIELD_BODY_NAME, FIELD_EVENT, FIELD_LANDABLE, FIELD_MATERIALS, FIELD_SCAN_TYPE
 from material_api import VALUE_EVENT_FSDJUMP, VALUE_EVENT_SCAN, VALUE_SCAN_TYPE_DETAILED
@@ -102,11 +106,25 @@ def plugin_start(_plugin_dir):
     raw_material_filters = [x for x in material_filters_config if x]
     # Load known filters
     this.materialFilters = MaterialFilterListConfigTranslator.translate_from_settings(raw_material_filters)
+
+    #                |
+    # . . .,---.,---.|__/ ,---.,---.
+    # | | ||   ||    |  \ |---'|
+    # `-'-'`---'`    `   ``---'`
+    this.lastEDSMScan = None
+    this.edsmQueries = EDSM_QUERIES
+
     LOGGER.log(this, LOG_INFO, 'Plugin Materializer (version: {version}) enabled...'.format(version=VERSION))
     for f in this.materialFilters:
         LOGGER.debug(this, '  Filter used: {filter}'.format(filter=f.__str__()))
 
     return 'Materializer'
+
+
+def plugin_stop():
+    """Stop and cleanup all running threads."""
+
+    this.edsmQueries.stop()
 
 
 def plugin_app(parent):
@@ -117,6 +135,8 @@ def plugin_app(parent):
     frames from plugins. It is lazy loaded later on.
     """
 
+    parent.bind('<<EDSMCallback>>', _edsm_callback_received)
+    this.edsmQueries.start(parent)
     this.materialMatchesFrame = MaterialFilterMatchesFrame(parent, this.materialFilters)
     return this.materialMatchesFrame
 
@@ -173,3 +193,55 @@ def create_options_prefs(parent):
     frame.grid()
     return wrap_frame
 
+
+def _edsm_callback_received(_event=None):
+    """Proxy callbacks to plugins that support them.
+
+    You should filter the responses you need out yourself.
+    You can pre-filter specific api's and endpoints by implementing
+    specific callbacks for each:
+
+        * edsm_querier_response_api_system_v1_bodies: will only receive api-system-v1 bodies responses.
+        * edsm_querier_response_api_system_v1: will receive all api-system-v1 responses.
+        * edsm_querier_response: will receive all responses.
+
+
+    If any of these returns `True`, the remaining more generic methods will be skipped for your plugin.
+    """
+
+    LOGGER.debug(this, 'edsm callback received')
+    while True:
+        response = this.edsmQueries.get_response()
+        if response is None:
+            break
+
+        # LOGGER.debug(this, 'response: {resp}'.format(resp=pformat(response)))
+        (request, reply) = response
+        (api, endpoint, _method, _request_params) = request
+
+        api_callbacks = [
+            'edsm_querier_response_{api}_{endpoint}'.format(
+                api=api.replace('-', '_'),
+                endpoint=endpoint,
+            ),
+            'edsm_querier_response_{api}'.format(api=api.replace('-', '_')),
+            'edsm_querier_response',
+        ]
+
+        for plugin in plug.PLUGINS:
+            for api_callback in api_callbacks:
+
+                LOGGER.debug(this, "checking for function: '{func}' on {plugin}".format(
+                    func=api_callback,
+                    plugin=plugin.name,
+                ))
+                LOGGER.debug(this, "plugin: {pl}".format(pl=pformat(plugin)))
+                if hasattr(plugin.module, api_callback):
+                    response = plug.invoke(plugin.name, None, api_callback, request, reply)
+                    LOGGER.debug(this, 'calling {func} on {plugin}: {response}'.format(
+                        func=api_callback,
+                        plugin=plugin,
+                        response=str(response),
+                    ))
+                    if response is True:
+                        break

@@ -1,3 +1,4 @@
+requests
 testfixtures
 invoke==1.2.0
 -e git+git://github.com/PyCQA/pylint@1.9#egg=pylint

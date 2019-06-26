@@ -248,7 +248,6 @@ class MaterialFilterMatchesFrame(tk.Frame):
                 LOGGER.debug(self, "Matched {match}".format(match=filter_match.__str__()))
                 matches.append(filter_match)
         return matches
-        # return [m for m in [f.check_match(materials) for f in self.filters] if m is not None]
 
     def _clear_matches(self, update_ui=True):
         """Clear the frame with matches."""
@@ -258,6 +257,7 @@ class MaterialFilterMatchesFrame(tk.Frame):
         if update_ui:
             self._draw_matches()
             self.containerFrame.configure(background=theme.current['background'])
+            #self.containerFrame.configure(background='#ff0000')
 
     def _add_matches(self, planet, matches, priority=False):
         """Add a planet with matches to the frame."""
@@ -301,6 +301,7 @@ class MaterialFilterMatchesFrame(tk.Frame):
                 match_widget.pack(side=tk.LEFT, padx=2, pady=1)
 
             current_row = current_row + 1
+
         self.containerFrame.configure(background=theme.current['background'])
         self.containerFrame.grid()
 
